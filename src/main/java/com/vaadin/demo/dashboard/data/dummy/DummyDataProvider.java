@@ -1,5 +1,27 @@
 package com.vaadin.demo.dashboard.data.dummy;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.vaadin.data.util.sqlcontainer.connection.JDBCConnectionPool;
+import com.vaadin.data.util.sqlcontainer.connection.SimpleJDBCConnectionPool;
+import com.vaadin.demo.dashboard.data.DataProvider;
+import com.vaadin.demo.dashboard.domain.DashboardNotification;
+import com.vaadin.demo.dashboard.domain.Movie;
+import com.vaadin.demo.dashboard.domain.MovieRevenue;
+import com.vaadin.demo.dashboard.domain.Transaction;
+import com.vaadin.demo.dashboard.domain.User;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.util.CurrentInstance;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,6 +32,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,26 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.vaadin.demo.dashboard.data.DataProvider;
-import com.vaadin.demo.dashboard.domain.DashboardNotification;
-import com.vaadin.demo.dashboard.domain.Movie;
-import com.vaadin.demo.dashboard.domain.MovieRevenue;
-import com.vaadin.demo.dashboard.domain.Transaction;
-import com.vaadin.demo.dashboard.domain.User;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.util.CurrentInstance;
 
 /**
  * A dummy implementation for the backend API.
@@ -107,6 +113,85 @@ public class DummyDataProvider implements DataProvider {
 
         File baseDirectory = vaadinRequest.getService().getBaseDirectory();
         cache = new File(baseDirectory + "/movies.txt");
+        String driver = "com.mysql.jdbc.Driver";
+        String url = "jdbc:mysql://localhost:3306/ticketing_schema";
+        String user = "me";
+        String password = "0987";
+
+        JDBCConnectionPool connectionPool = null;
+        //FreeformQuery query = null;
+
+        // insert this MySQL - ticketing_schema@localhost
+
+        try
+        {
+            connectionPool = new SimpleJDBCConnectionPool(
+                    driver,
+                    url, user, password );
+
+            // Have to use free-form queries as there are no primary keys to the DB (dammit)
+            //query = new FreeformQuery( "SELECT * FROM movie_db", connectionPool );
+            //SQLContainer container = new SQLContainer( query );
+        }
+        catch( SQLException e )
+        {
+            e.printStackTrace();
+        }
+
+        Connection con = null;
+        Statement st = null;
+        ResultSet rs = null;
+
+
+        try {
+            //Class.forName( driver );
+            //con = DriverManager.getConnection( url, user, password );
+            con = connectionPool.reserveConnection();
+
+            st = con.createStatement();
+            rs = st.executeQuery("SELECT * FROM moviesjson");
+
+            // read as JSON
+            if (rs.next())
+            {
+                JsonParser parser = new JsonParser();
+                json = parser.parse( rs.getString( 1 ) ).getAsJsonObject();
+
+                //System.out.println(rs.getString(1));
+            }
+
+        }
+        catch( SQLException e )
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                if (rs != null)
+                {
+                    rs.close();
+                }
+                if (st != null)
+                {
+                    st.close();
+                }
+                if (con != null)
+                {
+                    con.close();
+                }
+                if( connectionPool != null )
+                {
+                    connectionPool.releaseConnection( con );
+                    connectionPool.destroy();
+                }
+
+            }
+            catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
 
         try {
             if (cache.exists()
@@ -127,9 +212,12 @@ public class DummyDataProvider implements DataProvider {
                         json = readJsonFromFile(new File(baseDirectory
                                 + "/movies-fallback.txt"));
                     }
-                } else {
-                    json = readJsonFromFile(new File(baseDirectory
-                            + "/movies-fallback.txt"));
+                }
+                // As a fall-back
+                else if( json == null )
+                {
+                        json = readJsonFromFile(new File(baseDirectory
+                                + "/movies-fallback.txt"));
                 }
             }
         } catch (Exception e) {
@@ -186,7 +274,35 @@ public class DummyDataProvider implements DataProvider {
         }
         return result;
     }
-
+    /*
+    public JsonObject getJSONFromResultSet(ResultSet rs,String keyName) {
+        JsonObject json = new JsonObject();
+        JsonArray list = new JsonArray();
+        if(rs!=null)
+        {
+            try {
+                ResultSetMetaData metaData = rs.getMetaData();
+                while(rs.next())
+                {
+                    Map<String,Object> columnMap = new HashMap<String, Object>();
+                    for(int columnIndex=1;columnIndex<=metaData.getColumnCount();columnIndex++)
+                    {
+                        if(rs.getString(metaData.getColumnName(columnIndex))!=null)
+                            columnMap.put(metaData.getColumnLabel(columnIndex),
+                                    rs.getString(metaData.getColumnName(columnIndex)));
+                        else
+                            columnMap.put(metaData.getColumnLabel(columnIndex), "");
+                    }
+                    list.add(columnMap);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            json.add(keyName, list);
+        }
+        return json;
+    }
+    */
     /* JSON utility method */
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
