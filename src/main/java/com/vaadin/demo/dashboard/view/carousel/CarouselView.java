@@ -22,7 +22,7 @@ public final class CarouselView extends VerticalLayout implements View
     JsonObject json;
 
     public CarouselView() {
-        //setSizeFull();
+        setSizeFull();
         addStyleName("carousel");
         DashboardEventBus.register(this);
 
@@ -31,13 +31,15 @@ public final class CarouselView extends VerticalLayout implements View
 
         //carousel.setWidth("100%");
         //carousel.setHeight("100%");
+        carousel.setSizeFull();
 
         // Only react to arrow keys when focused
         carousel.setArrowKeysMode( ArrowKeysMode.FOCUS);
         // Fetch children smart
         carousel.setLoadMode( CarouselLoadMode.SMART);
         // Transition animations between the children run 500 milliseconds
-        carousel.setTransitionDuration(500);
+        carousel.setTransitionDuration(1000);
+        //carousel.setButtonsVisible( false );
         //carousel.addComponentSelectListener( e -> {
         //    this.setData(new BeanItemContainer<>(Customer.class,
         //            service.findAll(e.getText())) );
@@ -52,6 +54,7 @@ public final class CarouselView extends VerticalLayout implements View
                 "https://farm8.staticflickr.com/7340/26779799504_73d2fbfff0_m.jpg" ) );
         //photo.setWidth(240.0f, Unit.PIXELS);
         //photo.setHeight(180.0f, Unit.PIXELS);
+        photo.setSizeFull();
         carousel.addComponent(photo);
 
         Image photo1 = new Image( "S574e49e36a9c4", new ExternalResource(
@@ -59,15 +62,18 @@ public final class CarouselView extends VerticalLayout implements View
 
         //photo1.setWidth(240.0f, Unit.PIXELS);
         //photo1.setHeight(180.0f, Unit.PIXELS);
+        photo1.setSizeFull();
         carousel.addComponent(photo1);
 
         Image photo2 = new Image( "Lawrason\\'s Snowflake and Flusho sign (2)", new ExternalResource(
                 "https://farm8.staticflickr.com/7239/26779801484_50c0ac3e6d_m.jpg" ) );
         //photo2.setWidth(240.0f, Unit.PIXELS);
         //photo2.setHeight(180.0f, Unit.PIXELS);
+        photo2.setSizeFull();
         carousel.addComponent(photo2);
 
         // Add the Carousel to a parent layout
+        carousel.scroll( 1 );
         addComponent(carousel);
     }
 
