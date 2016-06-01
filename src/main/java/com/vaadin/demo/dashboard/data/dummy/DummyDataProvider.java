@@ -103,7 +103,7 @@ public class DummyDataProvider implements DataProvider {
      * Rotten Tomatoes API to get the list. The result is cached to a local file
      * for 24h (daily limit of API calls is 10,000).
      *
-     * @return
+     * @return Movie
      */
     private static Collection<Movie> loadMoviesData() {
 
@@ -162,6 +162,10 @@ public class DummyDataProvider implements DataProvider {
 
         }
         catch( SQLException e )
+        {
+            e.printStackTrace();
+        }
+        catch( NullPointerException e )
         {
             e.printStackTrace();
         }
@@ -274,35 +278,7 @@ public class DummyDataProvider implements DataProvider {
         }
         return result;
     }
-    /*
-    public JsonObject getJSONFromResultSet(ResultSet rs,String keyName) {
-        JsonObject json = new JsonObject();
-        JsonArray list = new JsonArray();
-        if(rs!=null)
-        {
-            try {
-                ResultSetMetaData metaData = rs.getMetaData();
-                while(rs.next())
-                {
-                    Map<String,Object> columnMap = new HashMap<String, Object>();
-                    for(int columnIndex=1;columnIndex<=metaData.getColumnCount();columnIndex++)
-                    {
-                        if(rs.getString(metaData.getColumnName(columnIndex))!=null)
-                            columnMap.put(metaData.getColumnLabel(columnIndex),
-                                    rs.getString(metaData.getColumnName(columnIndex)));
-                        else
-                            columnMap.put(metaData.getColumnLabel(columnIndex), "");
-                    }
-                    list.add(columnMap);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            json.add(keyName, list);
-        }
-        return json;
-    }
-    */
+
     /* JSON utility method */
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
