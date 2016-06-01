@@ -5,9 +5,11 @@ import com.vaadin.demo.dashboard.event.DashboardEventBus;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.ExternalResource;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.VerticalLayout;
 
+import org.vaadin.virkki.carousel.ComponentSelectListener;
 import org.vaadin.virkki.carousel.HorizontalCarousel;
 import org.vaadin.virkki.carousel.client.widget.gwt.ArrowKeysMode;
 import org.vaadin.virkki.carousel.client.widget.gwt.CarouselLoadMode;
@@ -17,9 +19,10 @@ import org.vaadin.virkki.carousel.client.widget.gwt.CarouselLoadMode;
  */
 
 @SuppressWarnings("serial")
-public final class CarouselView extends VerticalLayout implements View
+public final class CarouselView extends VerticalLayout implements View, ComponentSelectListener
 {
-    JsonObject json;
+    private JsonObject json;
+    private HorizontalCarousel carousel = new HorizontalCarousel();
 
     public CarouselView() {
         setSizeFull();
@@ -27,7 +30,6 @@ public final class CarouselView extends VerticalLayout implements View
         DashboardEventBus.register(this);
 
         // addComponent carousel here
-        final HorizontalCarousel carousel = new HorizontalCarousel();
 
         //carousel.setWidth("100%");
         //carousel.setHeight("100%");
@@ -40,9 +42,7 @@ public final class CarouselView extends VerticalLayout implements View
         // Transition animations between the children run 500 milliseconds
         carousel.setTransitionDuration(1000);
         //carousel.setButtonsVisible( false );
-        //carousel.addComponentSelectListener( e -> {
-        //    this.setData(new BeanItemContainer<>(Customer.class,
-        //            service.findAll(e.getText())) );
+        carousel.addComponentSelectListener( this );
 
         // Add the child Components
         //carousel.addComponent(new Button("First child"));
@@ -72,18 +72,13 @@ public final class CarouselView extends VerticalLayout implements View
         photo2.setSizeFull();
         carousel.addComponent(photo2);
 
-        // Add the Carousel to a parent layout
+        // start off the auto-scroll
         carousel.scroll( 1 );
+
+        // Add the Carousel to a parent layout
         addComponent(carousel);
     }
 
-/*
-    private ComponentSelectListener loadPhotos()
-    {
-
-        return;
-    }
-*/
 
     @Override
     public void enter( ViewChangeListener.ViewChangeEvent viewChangeEvent )
@@ -91,4 +86,9 @@ public final class CarouselView extends VerticalLayout implements View
 
     }
 
+    @Override
+    public void componentSelected( Component component )
+    {
+        carousel.scroll( 1 );
+    }
 }
