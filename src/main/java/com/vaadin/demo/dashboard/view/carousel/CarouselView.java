@@ -38,7 +38,7 @@ public final class CarouselView extends VerticalLayout implements View, Componen
         // Only react to arrow keys when focused
         carousel.setArrowKeysMode( ArrowKeysMode.FOCUS);
         // Fetch children smart
-        carousel.setLoadMode( CarouselLoadMode.SMART);
+        carousel.setLoadMode( CarouselLoadMode.LAZY);
         // Transition animations between the children run 500 milliseconds
         carousel.setTransitionDuration(1000);
         //carousel.setButtonsVisible( false );
