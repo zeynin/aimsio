@@ -3,7 +3,7 @@ package com.vaadin.demo.dashboard.data;
 import com.vaadin.demo.dashboard.domain.DashboardNotification;
 import com.vaadin.demo.dashboard.domain.Movie;
 import com.vaadin.demo.dashboard.domain.MovieRevenue;
-import com.vaadin.demo.dashboard.domain.Photo;
+import com.vaadin.demo.dashboard.domain.FlickrPhoto;
 import com.vaadin.demo.dashboard.domain.Transaction;
 import com.vaadin.demo.dashboard.domain.User;
 
@@ -78,12 +78,12 @@ public interface DataProvider {
     /**
      * @return A Collection of photos.
      */
-    Collection<Photo> getPhotos();
+    Collection<FlickrPhoto> getPhotos();
 
     /**
      * @param photoId
      *            Photos's identifier
      * @return A Photo instance for the given id.
      */
-    Photo getPhoto(long photoId);
+    FlickrPhoto getPhoto(long photoId);
 }

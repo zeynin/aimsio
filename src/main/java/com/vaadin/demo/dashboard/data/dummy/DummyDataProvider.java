@@ -17,7 +17,7 @@ import com.vaadin.demo.dashboard.data.DataProvider;
 import com.vaadin.demo.dashboard.domain.DashboardNotification;
 import com.vaadin.demo.dashboard.domain.Movie;
 import com.vaadin.demo.dashboard.domain.MovieRevenue;
-import com.vaadin.demo.dashboard.domain.Photo;
+import com.vaadin.demo.dashboard.domain.FlickrPhoto;
 import com.vaadin.demo.dashboard.domain.Transaction;
 import com.vaadin.demo.dashboard.domain.User;
 import com.vaadin.server.VaadinRequest;
@@ -65,7 +65,7 @@ public class DummyDataProvider implements DataProvider {
     private static Collection<Movie> movies;
     private static Multimap<Long, Transaction> transactions;
     private static Multimap<Long, MovieRevenue> revenue;
-    private static Collection<Photo> photos;
+    private static Collection<FlickrPhoto> photos;
 
     private static Random rand = new Random();
 
@@ -344,9 +344,9 @@ public class DummyDataProvider implements DataProvider {
      * Start with a Flickr feed. First get the JSON feed and then parse.
      * Also created a backup text file.
      *
-     * @return Photo
+     * @return FlickrPhoto
      */
-    private static Collection<Photo> loadPhotoData()
+    private static Collection<FlickrPhoto> loadPhotoData()
     {
         JsonObject json = null;
         File cache;
@@ -394,7 +394,7 @@ public class DummyDataProvider implements DataProvider {
             e.printStackTrace();
         }
 
-        Collection<Photo> result = new ArrayList<Photo>();
+        Collection<FlickrPhoto> result = new ArrayList<FlickrPhoto>();
         if (json != null) {
             JsonArray photosJson;
 
@@ -402,7 +402,7 @@ public class DummyDataProvider implements DataProvider {
             for (int i = 0; i < photosJson.size(); i++) {
                 JsonObject photoJson = photosJson.get(i).getAsJsonObject();
                 JsonObject media = photoJson.get("media").getAsJsonObject();
-                Photo photo = new Photo();
+                FlickrPhoto photo = new FlickrPhoto();
                 photo.setId(i);
                 photo.setTitle(photoJson.get("title").getAsString());
                 try {
@@ -412,32 +412,21 @@ public class DummyDataProvider implements DataProvider {
                     // No need to handle this exception
                     e.printStackTrace();
                 }
-                /*
-                movie.setSynopsis(movieJson.get("synopsis").getAsString());
-                movie.setThumbUrl(posters.get("profile").getAsString()
-                        .replace("_tmb", "_320"));
-                movie.setPosterUrl(posters.get("detailed").getAsString()
-                        .replace("_tmb", "_640"));
+
+                photo.setDescription(photoJson.get("description").getAsString());
+                photo.setAuthorID(photoJson.get("author_id").getAsString());
 
                 try {
-                    JsonObject releaseDates = movieJson
-                            .get("release_dates").getAsJsonObject();
-                    String datestr = releaseDates.get("theater")
+                    JsonObject dateTaken = photoJson
+                            .get("date_taken").getAsJsonObject();
+                    String datestr = dateTaken.get("theater")
                             .getAsString();
                     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-                    movie.setReleaseDate(df.parse(datestr));
+                    photo.setDateTaken(df.parse(datestr));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
-                try {
-                    movie.setScore(movieJson.get("ratings")
-                            .getAsJsonObject().get("critics_score")
-                            .getAsInt());
-                } catch (Exception e) {
-                    // No need to handle this exception
-                }
-                */
                 result.add(photo);
             }
         }
@@ -450,7 +439,7 @@ public class DummyDataProvider implements DataProvider {
      * @return a list of Movie objects
      */
     @Override
-    public Collection<Photo> getPhotos() {
+    public Collection<FlickrPhoto> getPhotos() {
         return Collections.unmodifiableCollection(photos);
     }
 
@@ -458,14 +447,14 @@ public class DummyDataProvider implements DataProvider {
     /**
      * @param photoId
      *            Photos's identifier
-     * @return A Photo instance for the given id.
+     * @return A FlickrPhoto instance for the given id.
      */
     @Override
-    public Photo getPhoto(final long photoId)
+    public FlickrPhoto getPhoto(final long photoId)
     {
-        return Iterables.find( photos, new Predicate<Photo>() {
+        return Iterables.find( photos, new Predicate<FlickrPhoto>() {
             @Override
-            public boolean apply(Photo input) {
+            public boolean apply(FlickrPhoto input) {
                 return input.getId() == photoId;
             }
         });

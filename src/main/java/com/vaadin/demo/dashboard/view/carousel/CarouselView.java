@@ -2,7 +2,7 @@ package com.vaadin.demo.dashboard.view.carousel;
 
 import com.google.gson.JsonObject;
 import com.vaadin.demo.dashboard.DashboardUI;
-import com.vaadin.demo.dashboard.domain.Photo;
+import com.vaadin.demo.dashboard.domain.FlickrPhoto;
 import com.vaadin.demo.dashboard.event.DashboardEventBus;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
@@ -45,7 +45,7 @@ public final class CarouselView extends VerticalLayout implements View, Componen
         carousel.setButtonsVisible( false );
         carousel.addComponentSelectListener( this );
 
-        for (final Photo photo : DashboardUI.getDataProvider().getPhotos())
+        for (final FlickrPhoto photo : DashboardUI.getDataProvider().getPhotos())
         {
             Image photoFeed = new Image(null, new ExternalResource(
                     photo.getMediaLink() ) );

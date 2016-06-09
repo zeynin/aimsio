@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by Zeynin on 2016-06-01.
  */
-public class Photo
+public class FlickrPhoto
 {
     private long id;
     private String title;
