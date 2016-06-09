@@ -109,60 +109,29 @@ public class DummyDataProvider implements DataProvider {
      *
      * @return Movie
      */
-    private static Collection<Movie> loadMoviesData() {
-
+    private static Collection<Movie> loadMoviesData()
+    {
         JsonObject json = null;
         File cache;
         VaadinRequest vaadinRequest = CurrentInstance.get(VaadinRequest.class);
 
         // zj Get movie dump from MySQL
-        json = GetMySQLMovies();
+        json = getMySQLMovies();
 
         File baseDirectory = vaadinRequest.getService().getBaseDirectory();
         cache = new File(baseDirectory + "/movies.txt");
 
-        try
+        Collection<Movie> result = new ArrayList<Movie>();
+
+        if( json == null )
         {
-            if( json == null )
-            {
-                if( cache.exists()
-                        && System.currentTimeMillis() < cache.lastModified() + ( 1000 * 60 * 60 * 24 ) )
-                {
-                    // Use cache if it's under 24h old
-                    json = readJsonFromFile( cache );
-                }
-                else
-                {
-                    if( ROTTEN_TOMATOES_API_KEY != null )
-                    {
-                        try
-                        {
-                            json = readJsonFromUrl( "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?page_limit=30&apikey=" + ROTTEN_TOMATOES_API_KEY );
-                            // Store in cache
-                            FileWriter fileWriter = new FileWriter( cache );
-                            fileWriter.write( json.toString() );
-                            fileWriter.close();
-                        }
-                        catch( Exception e )
-                        {
-                            json = readJsonFromFile(new File(baseDirectory
-                                    + "/movies-fallback.txt"));
-                        }
-                    }
-                    else
-                    {
-                        json = readJsonFromFile( new File( baseDirectory + "/movies-fallback.txt" ) );
-                    }
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            json = readJsonFeed( cache, new File(baseDirectory + "/movies-fallback.txt"),
+                    ROTTEN_TOMATOES_API_KEY,
+                    "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?page_limit=30&apikey=" + ROTTEN_TOMATOES_API_KEY );
         }
 
-        Collection<Movie> result = new ArrayList<Movie>();
-        if (json != null) {
+        if( json != null )
+        {
             JsonArray moviesJson;
 
             moviesJson = json.getAsJsonArray("movies");
@@ -215,7 +184,7 @@ public class DummyDataProvider implements DataProvider {
     /*
     * Pull data feed from MySQL instead of a file
     * */
-    private static JsonObject GetMySQLMovies()
+    private static JsonObject getMySQLMovies()
     {
         String driver = "com.mysql.jdbc.Driver";
         String url = "jdbc:mysql://localhost:3306/ticketing_schema";
@@ -256,8 +225,6 @@ public class DummyDataProvider implements DataProvider {
             {
                 JsonParser parser = new JsonParser();
                 json = parser.parse( rs.getString( 1 ) ).getAsJsonObject();
-
-                //System.out.println(rs.getString(1));
             }
 
         }
@@ -273,15 +240,15 @@ public class DummyDataProvider implements DataProvider {
         {
             try
             {
-                if (rs != null)
+                if( rs != null )
                 {
-                    rs.close();
+                   rs.close();
                 }
-                if (st != null)
+                if( st != null )
                 {
-                    st.close();
+                   st.close();
                 }
-                if (con != null)
+                if( con != null )
                 {
                     con.close();
                 }
@@ -292,9 +259,54 @@ public class DummyDataProvider implements DataProvider {
                 }
 
             }
-            catch (SQLException ex) {
+            catch( SQLException ex )
+            {
                 ex.printStackTrace();
             }
+        }
+
+        return json;
+    }
+
+    /* JSON utility */
+    private static JsonObject readJsonFeed( File cache, File backup, String apiKey, String url )
+    {
+        JsonObject json = null;
+
+        try
+        {
+            if( cache.exists()
+                    && System.currentTimeMillis() < cache.lastModified() + ( 1000 * 60 * 60 * 24 ) )
+            {
+                // Use cache if it's under 24h old
+                json = readJsonFromFile( cache );
+            }
+            else
+            {
+                if( apiKey != null )
+                {
+                    try
+                    {
+                        json = readJsonFromUrl( url );
+                        // Store in cache
+                        FileWriter fileWriter = new FileWriter( cache );
+                        fileWriter.write( json.toString() );
+                        fileWriter.close();
+                    }
+                    catch( Exception e )
+                    {
+                        json = readJsonFromFile( backup );
+                    }
+                }
+                else
+                {
+                    json = readJsonFromFile( backup );
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
 
         return json;
@@ -359,64 +371,31 @@ public class DummyDataProvider implements DataProvider {
         File baseDirectory = vaadinRequest.getService().getBaseDirectory();
         cache = new File(baseDirectory + "/photos_flickr.txt");
 
-        try
-        {
-            if( false )
-            //if( cache.exists()
-            //        && System.currentTimeMillis() < cache.lastModified() + ( 1000 * 60 * 60 * 24 ) )
-            {
-                // Use cache if it's under 24h old
-                json = readJsonFromFile( cache );
-            }
-            else
-            {
-                //if( _500PX_API_KEY != null )
-                if( true )
-                {
-                    try
-                    {
-                        //https://api.500px.com/v1/photos/oauth/authorize?oauth_token=%22Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM%22&oauth_callback=%22https://api.500px.com/v1/photos?feature=popular%22
-                        // JSON feed starts with a type of function call - need to remove it first
-                        // before loading
-                        json = readJsonFromUrl( "https://api.flickr.com/services/feeds/photos_public.gne?format=json" );
-                        // Store in cache
-                        FileWriter fileWriter = new FileWriter( cache );
-                        fileWriter.write( json.toString() );
-                        fileWriter.close();
-                    }
-                    catch( Exception e )
-                    {
-                        e.printStackTrace();
-                        json = readJsonFromFile(new File(baseDirectory
-                                + "/photos_flickr.txt"));
-                    }
-                }
-                else
-                {
-                    json = readJsonFromFile( new File( baseDirectory + "/photos_flickr.txt" ) );
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        json = readJsonFeed( cache, cache, _500PX_API_KEY,
+                "https://api.flickr.com/services/feeds/photos_public.gne?format=json" );
+        //https://api.500px.com/v1/photos/oauth/authorize?oauth_token=%22Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM%22&oauth_callback=%22https://api.500px.com/v1/photos?feature=popular%22
 
         Collection<FlickrPhoto> result = new ArrayList<FlickrPhoto>();
-        if (json != null) {
-            JsonArray photosJson;
 
+        if (json != null)
+        {
+            JsonArray photosJson;
             photosJson = json.getAsJsonArray("items");
-            for (int i = 0; i < photosJson.size(); i++) {
+
+            for (int i = 0; i < photosJson.size(); i++)
+            {
                 JsonObject photoJson = photosJson.get(i).getAsJsonObject();
                 JsonObject media = photoJson.get("media").getAsJsonObject();
                 FlickrPhoto photo = new FlickrPhoto();
                 photo.setId(i);
                 photo.setTitle(photoJson.get("title").getAsString());
-                try {
+
+                try
+                {
                     photo.setMediaLink(media.get("m").getAsString());
-                    String s = photo.getMediaLink();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     // No need to handle this exception
                     e.printStackTrace();
                 }
@@ -424,20 +403,22 @@ public class DummyDataProvider implements DataProvider {
                 photo.setDescription(photoJson.get("description").getAsString());
                 photo.setAuthorID(photoJson.get("author_id").getAsString());
 
-                try {
-                    JsonObject dateTaken = photoJson
-                            .get("date_taken").getAsJsonObject();
-                    String datestr = dateTaken.get("theater")
-                            .getAsString();
+                try
+                {
+                    String datestr = photoJson.get("date_taken").getAsString();
+                    // "2016-06-08T23:06:35Z"
                     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                     photo.setDateTaken(df.parse(datestr));
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     e.printStackTrace();
                 }
 
-                result.add(photo);
+                result.add( photo );
             }
         }
+
         return result;
     }
 
@@ -447,8 +428,9 @@ public class DummyDataProvider implements DataProvider {
      * @return a list of Movie objects
      */
     @Override
-    public Collection<FlickrPhoto> getPhotos() {
-        return Collections.unmodifiableCollection(photos);
+    public Collection<FlickrPhoto> getPhotos()
+    {
+        return Collections.unmodifiableCollection( photos );
     }
 
 
@@ -633,14 +615,14 @@ public class DummyDataProvider implements DataProvider {
     @Override
     public User authenticate(String userName, String password) {
         User user = new User();
-        user.setFirstName(DummyDataGenerator.randomFirstName());
-        user.setLastName(DummyDataGenerator.randomLastName());
+        user.setFirstName( DummyDataGenerator.randomFirstName());
+        user.setLastName( DummyDataGenerator.randomLastName());
         user.setRole("admin");
         String email = user.getFirstName().toLowerCase() + "."
                 + user.getLastName().toLowerCase() + "@"
                 + DummyDataGenerator.randomCompanyName().toLowerCase() + ".com";
         user.setEmail(email.replaceAll(" ", ""));
-        user.setLocation(DummyDataGenerator.randomWord(5, true));
+        user.setLocation( DummyDataGenerator.randomWord(5, true));
         user.setBio("Quis aute iure reprehenderit in voluptate velit esse."
                 + "Cras mattis iudicium purus sit amet fermentum.");
         return user;
