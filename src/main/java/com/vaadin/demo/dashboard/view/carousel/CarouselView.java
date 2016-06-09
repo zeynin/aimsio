@@ -1,6 +1,5 @@
 package com.vaadin.demo.dashboard.view.carousel;
 
-import com.google.gson.JsonObject;
 import com.vaadin.demo.dashboard.DashboardUI;
 import com.vaadin.demo.dashboard.domain.FlickrPhoto;
 import com.vaadin.demo.dashboard.event.DashboardEventBus;
@@ -24,7 +23,6 @@ import org.vaadin.virkki.carousel.client.widget.gwt.CarouselLoadMode;
 @SuppressWarnings("serial")
 public final class CarouselView extends VerticalLayout implements View, ComponentSelectListener
 {
-    private JsonObject json;
     private HorizontalCarousel carousel = new HorizontalCarousel();
 
     public CarouselView()
