@@ -1,11 +1,18 @@
 package com.vaadin.demo.dashboard.data.dummy;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import com.vaadin.addon.charts.model.style.Color;
 import com.vaadin.addon.charts.model.style.SolidColor;
+import com.vaadin.demo.dashboard.domain.ApiInfo;
 import com.vaadin.demo.dashboard.domain.DashboardNotification;
+
+import org.scribe.builder.api.FacebookApi;
+import org.scribe.builder.api.LinkedInApi;
+import org.scribe.builder.api.TwitterApi;
+import org.vaadin.addon.oauthpopup.buttons.GitHubApi;
+import org.vaadin.addon.oauthpopup.buttons.GooglePlusApi;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 public abstract class DummyDataGenerator {
 
@@ -157,4 +164,40 @@ public abstract class DummyDataGenerator {
             new SolidColor("#3090F0"), new SolidColor("#18DDBB"),
             new SolidColor("#98DF58"), new SolidColor("#F9DD51"),
             new SolidColor("#F09042"), new SolidColor("#EC6464") };
+
+
+    // Twitter test application at http://localhost:8080
+    public static final ApiInfo TWITTER_API = new ApiInfo("Twitter",
+            TwitterApi.class,
+            "31ssXGMU4WW6KPxWwT6IMQ",
+            "FR3wJmGyGAdpQMxB3vMreED2UnsHVb6nPF16f1RrtU",
+            "https://api.twitter.com/1.1/account/settings.json");
+
+    // Facebook test application at http://localhost:8080
+    public static final ApiInfo FACEBOOK_API = new ApiInfo("Facebook",
+            FacebookApi.class,
+            "170732353126405",
+            "dd59293cda395bf38a88044c22937e7e",
+            "https://graph.facebook.com/me");
+
+    // Facebook test application at http://localhost:8080
+    public static final ApiInfo GOOGLEPLUS_API = new ApiInfo("GooglePlus",
+            GooglePlusApi.class,
+            "xHkW9aeTnoYk4k1lUYicCjbKY9VXjYOWxE3OsBt8",
+            "Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM",
+            "https://www.googleapis.com");
+
+    // LinkedIn test application at http://localhost:8080
+    public static final ApiInfo LINKEDIN_API = new ApiInfo("LinkedIn",
+            LinkedInApi.class,
+            "bp0aa1rxk2re",
+            "Q2Na42cZmVs3OWnI",
+            "https://api.linkedin.com/v1/people/~");
+
+    public static final ApiInfo GITHUB_API = new ApiInfo("GitHub",
+            GitHubApi.class,
+            "97a7e251c538106e7922",
+            "6a36b0992e5e2b00a38c44c21a6e0dc8ae01d83b",
+            "https://api.github.com/user");
+
 }

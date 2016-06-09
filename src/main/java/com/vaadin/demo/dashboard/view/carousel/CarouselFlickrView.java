@@ -21,14 +21,14 @@ import org.vaadin.virkki.carousel.client.widget.gwt.CarouselLoadMode;
  */
 
 @SuppressWarnings("serial")
-public final class CarouselView extends VerticalLayout implements View, ComponentSelectListener
+public final class CarouselFlickrView extends VerticalLayout implements View, ComponentSelectListener
 {
     private HorizontalCarousel carousel = new HorizontalCarousel();
 
-    public CarouselView()
+    public CarouselFlickrView()
     {
         setSizeFull();
-        addStyleName("carousel");
+        addStyleName("carouselFlickr");
         DashboardEventBus.register(this);
         Responsive.makeResponsive(this);
 
@@ -52,7 +52,7 @@ public final class CarouselView extends VerticalLayout implements View, Componen
         }
 
         // start off the auto-scroll
-        carousel.scroll( -1 );
+        carousel.scroll( 1 );
 
         // Add the Carousel to a parent layout
         addComponent(carousel);
@@ -68,6 +68,6 @@ public final class CarouselView extends VerticalLayout implements View, Componen
     @Override
     public void componentSelected( Component component )
     {
-        carousel.scroll( -1 );
+        carousel.scroll( 1 );
     }
 }
