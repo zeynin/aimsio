@@ -16,7 +16,7 @@ public enum DashboardViewType {
             "transactions", TransactionsView.class, FontAwesome.TABLE, false), REPORTS(
             "reports", ReportsView.class, FontAwesome.FILE_TEXT_O, true), SCHEDULE(
             "schedule", ScheduleView.class, FontAwesome.CALENDAR_O, false),
-    CAROUSEL( "500px", CarouselView.class, FontAwesome._500PX, false );
+    CAROUSEL( "flickr", CarouselView.class, FontAwesome.FLICKR, false );
 
     private final String viewName;
     private final Class<? extends View> viewClass;
