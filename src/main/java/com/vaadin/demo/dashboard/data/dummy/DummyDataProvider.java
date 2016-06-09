@@ -317,6 +317,10 @@ public class DummyDataProvider implements DataProvider {
             BufferedReader rd = new BufferedReader(new InputStreamReader(is,
                     Charset.forName("UTF-8")));
             String jsonText = readAll(rd);
+            if( jsonText.contains( "jsonFlickrFeed" ) )
+            {
+                jsonText = jsonText.substring("jsonFlickrFeed(".length(), jsonText.length()-1);
+            }
             JsonElement jelement = new JsonParser().parse(jsonText);
             JsonObject jobject = jelement.getAsJsonObject();
             return jobject;
@@ -357,8 +361,9 @@ public class DummyDataProvider implements DataProvider {
 
         try
         {
-            if( cache.exists()
-                    && System.currentTimeMillis() < cache.lastModified() + ( 1000 * 60 * 60 * 24 ) )
+            if( false )
+            //if( cache.exists()
+            //        && System.currentTimeMillis() < cache.lastModified() + ( 1000 * 60 * 60 * 24 ) )
             {
                 // Use cache if it's under 24h old
                 json = readJsonFromFile( cache );
@@ -371,6 +376,8 @@ public class DummyDataProvider implements DataProvider {
                     try
                     {
                         //https://api.500px.com/v1/photos/oauth/authorize?oauth_token=%22Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM%22&oauth_callback=%22https://api.500px.com/v1/photos?feature=popular%22
+                        // JSON feed starts with a type of function call - need to remove it first
+                        // before loading
                         json = readJsonFromUrl( "https://api.flickr.com/services/feeds/photos_public.gne?format=json" );
                         // Store in cache
                         FileWriter fileWriter = new FileWriter( cache );
@@ -379,6 +386,7 @@ public class DummyDataProvider implements DataProvider {
                     }
                     catch( Exception e )
                     {
+                        e.printStackTrace();
                         json = readJsonFromFile(new File(baseDirectory
                                 + "/photos_flickr.txt"));
                     }
