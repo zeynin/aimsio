@@ -17,6 +17,7 @@ import com.vaadin.demo.dashboard.data.DataProvider;
 import com.vaadin.demo.dashboard.domain.DashboardNotification;
 import com.vaadin.demo.dashboard.domain.Movie;
 import com.vaadin.demo.dashboard.domain.MovieRevenue;
+import com.vaadin.demo.dashboard.domain.Photo;
 import com.vaadin.demo.dashboard.domain.Transaction;
 import com.vaadin.demo.dashboard.domain.User;
 import com.vaadin.server.VaadinRequest;
@@ -56,6 +57,7 @@ public class DummyDataProvider implements DataProvider {
 
     // TODO: Get API key from http://developer.rottentomatoes.com
     private static final String ROTTEN_TOMATOES_API_KEY = null;
+    private static final String _500PX_API_KEY = "%22Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM%22";//"xHkW9aeTnoYk4k1lUYicCjbKY9VXjYOWxE3OsBt8"
 
     /* List of countries and cities for them */
     private static Multimap<String, String> countryToCities;
@@ -63,6 +65,7 @@ public class DummyDataProvider implements DataProvider {
     private static Collection<Movie> movies;
     private static Multimap<Long, Transaction> transactions;
     private static Multimap<Long, MovieRevenue> revenue;
+    private static Collection<Photo> photos;
 
     private static Random rand = new Random();
 
@@ -86,6 +89,7 @@ public class DummyDataProvider implements DataProvider {
         movies = loadMoviesData();
         transactions = generateTransactionsData();
         revenue = countRevenues();
+        photos = loadPhotoData();
     }
 
     /**
@@ -111,120 +115,49 @@ public class DummyDataProvider implements DataProvider {
         File cache;
         VaadinRequest vaadinRequest = CurrentInstance.get(VaadinRequest.class);
 
+        // zj Get movie dump from MySQL
+        json = GetMySQLMovies();
+
         File baseDirectory = vaadinRequest.getService().getBaseDirectory();
         cache = new File(baseDirectory + "/movies.txt");
-        String driver = "com.mysql.jdbc.Driver";
-        String url = "jdbc:mysql://localhost:3306/ticketing_schema";
-        String user = "me";
-        String password = "0987";
-
-        JDBCConnectionPool connectionPool = null;
-        //FreeformQuery query = null;
-
-        // insert this MySQL - ticketing_schema@localhost
 
         try
         {
-            connectionPool = new SimpleJDBCConnectionPool(
-                    driver,
-                    url, user, password );
-
-            // Have to use free-form queries as there are no primary keys to the DB (dammit)
-            //query = new FreeformQuery( "SELECT * FROM movie_db", connectionPool );
-            //SQLContainer container = new SQLContainer( query );
-        }
-        catch( SQLException e )
-        {
-            e.printStackTrace();
-        }
-
-        Connection con = null;
-        Statement st = null;
-        ResultSet rs = null;
-
-
-        try {
-            //Class.forName( driver );
-            //con = DriverManager.getConnection( url, user, password );
-            con = connectionPool.reserveConnection();
-
-            st = con.createStatement();
-            rs = st.executeQuery("SELECT * FROM moviesjson");
-
-            // read as JSON
-            if (rs.next())
+            if( json == null )
             {
-                JsonParser parser = new JsonParser();
-                json = parser.parse( rs.getString( 1 ) ).getAsJsonObject();
-
-                //System.out.println(rs.getString(1));
-            }
-
-        }
-        catch( SQLException e )
-        {
-            e.printStackTrace();
-        }
-        catch( NullPointerException e )
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            try
-            {
-                if (rs != null)
+                if( cache.exists()
+                        && System.currentTimeMillis() < cache.lastModified() + ( 1000 * 60 * 60 * 24 ) )
                 {
-                    rs.close();
+                    // Use cache if it's under 24h old
+                    json = readJsonFromFile( cache );
                 }
-                if (st != null)
+                else
                 {
-                    st.close();
-                }
-                if (con != null)
-                {
-                    con.close();
-                }
-                if( connectionPool != null )
-                {
-                    connectionPool.releaseConnection( con );
-                    connectionPool.destroy();
-                }
-
-            }
-            catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        try {
-            if (cache.exists()
-                    && System.currentTimeMillis() < cache.lastModified()
-                            + (1000 * 60 * 60 * 24)) {
-                // Use cache if it's under 24h old
-                json = readJsonFromFile(cache);
-            } else {
-                if (ROTTEN_TOMATOES_API_KEY != null) {
-                    try {
-                        json = readJsonFromUrl("http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?page_limit=30&apikey="
-                                + ROTTEN_TOMATOES_API_KEY);
-                        // Store in cache
-                        FileWriter fileWriter = new FileWriter(cache);
-                        fileWriter.write(json.toString());
-                        fileWriter.close();
-                    } catch (Exception e) {
-                        json = readJsonFromFile(new File(baseDirectory
-                                + "/movies-fallback.txt"));
+                    if( ROTTEN_TOMATOES_API_KEY != null )
+                    {
+                        try
+                        {
+                            json = readJsonFromUrl( "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?page_limit=30&apikey=" + ROTTEN_TOMATOES_API_KEY );
+                            // Store in cache
+                            FileWriter fileWriter = new FileWriter( cache );
+                            fileWriter.write( json.toString() );
+                            fileWriter.close();
+                        }
+                        catch( Exception e )
+                        {
+                            json = readJsonFromFile(new File(baseDirectory
+                                    + "/movies-fallback.txt"));
+                        }
+                    }
+                    else
+                    {
+                        json = readJsonFromFile( new File( baseDirectory + "/movies-fallback.txt" ) );
                     }
                 }
-                // As a fall-back
-                else if( json == null )
-                {
-                        json = readJsonFromFile(new File(baseDirectory
-                                + "/movies-fallback.txt"));
-                }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
 
@@ -279,6 +212,94 @@ public class DummyDataProvider implements DataProvider {
         return result;
     }
 
+    /*
+    * Pull data feed from MySQL instead of a file
+    * */
+    private static JsonObject GetMySQLMovies()
+    {
+        String driver = "com.mysql.jdbc.Driver";
+        String url = "jdbc:mysql://localhost:3306/ticketing_schema";
+        String user = "me";
+        String password = "0987";
+
+        JDBCConnectionPool connectionPool = null;
+
+        try
+        {
+            connectionPool = new SimpleJDBCConnectionPool(
+                    driver,
+                    url, user, password );
+
+            // Have to use free-form queries as there are no primary keys to the DB (dammit)
+            // Therefore, port JSON file as a JSON object into the database
+            // Extract as a JSON file.
+        }
+        catch( SQLException e )
+        {
+            e.printStackTrace();
+        }
+
+        Connection con = null;
+        Statement st = null;
+        ResultSet rs = null;
+        JsonObject json = null;
+
+        try
+        {
+            con = connectionPool.reserveConnection();
+
+            st = con.createStatement();
+            rs = st.executeQuery("SELECT * FROM moviesjson");
+
+            // read as JSON
+            if( rs.next() )
+            {
+                JsonParser parser = new JsonParser();
+                json = parser.parse( rs.getString( 1 ) ).getAsJsonObject();
+
+                //System.out.println(rs.getString(1));
+            }
+
+        }
+        catch( SQLException e )
+        {
+            e.printStackTrace();
+        }
+        catch( NullPointerException e )
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                if (rs != null)
+                {
+                    rs.close();
+                }
+                if (st != null)
+                {
+                    st.close();
+                }
+                if (con != null)
+                {
+                    con.close();
+                }
+                if( connectionPool != null )
+                {
+                    connectionPool.releaseConnection( con );
+                    connectionPool.destroy();
+                }
+
+            }
+            catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return json;
+    }
+
     /* JSON utility method */
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -315,6 +336,143 @@ public class DummyDataProvider implements DataProvider {
 
     /**
      * =========================================================================
+     * Pictures in a carousel
+     * =========================================================================
+     */
+
+    /**
+     * Start with a Flickr feed. First get the JSON feed and then parse.
+     * Also created a backup text file.
+     *
+     * @return Photo
+     */
+    private static Collection<Photo> loadPhotoData()
+    {
+        JsonObject json = null;
+        File cache;
+        VaadinRequest vaadinRequest = CurrentInstance.get(VaadinRequest.class);
+
+        File baseDirectory = vaadinRequest.getService().getBaseDirectory();
+        cache = new File(baseDirectory + "/photos_flickr.txt");
+
+        try
+        {
+            if( cache.exists()
+                    && System.currentTimeMillis() < cache.lastModified() + ( 1000 * 60 * 60 * 24 ) )
+            {
+                // Use cache if it's under 24h old
+                json = readJsonFromFile( cache );
+            }
+            else
+            {
+                //if( _500PX_API_KEY != null )
+                if( true )
+                {
+                    try
+                    {
+                        //https://api.500px.com/v1/photos/oauth/authorize?oauth_token=%22Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM%22&oauth_callback=%22https://api.500px.com/v1/photos?feature=popular%22
+                        json = readJsonFromUrl( "https://api.flickr.com/services/feeds/photos_public.gne?format=json" );
+                        // Store in cache
+                        FileWriter fileWriter = new FileWriter( cache );
+                        fileWriter.write( json.toString() );
+                        fileWriter.close();
+                    }
+                    catch( Exception e )
+                    {
+                        json = readJsonFromFile(new File(baseDirectory
+                                + "/photos_flickr.txt"));
+                    }
+                }
+                else
+                {
+                    json = readJsonFromFile( new File( baseDirectory + "/photos_flickr.txt" ) );
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Collection<Photo> result = new ArrayList<Photo>();
+        if (json != null) {
+            JsonArray photosJson;
+
+            photosJson = json.getAsJsonArray("items");
+            for (int i = 0; i < photosJson.size(); i++) {
+                JsonObject photoJson = photosJson.get(i).getAsJsonObject();
+                JsonObject media = photoJson.get("media").getAsJsonObject();
+                Photo photo = new Photo();
+                photo.setId(i);
+                photo.setTitle(photoJson.get("title").getAsString());
+                try {
+                    photo.setMediaLink(media.get("m").getAsString());
+                    String s = photo.getMediaLink();
+                } catch (Exception e) {
+                    // No need to handle this exception
+                    e.printStackTrace();
+                }
+                /*
+                movie.setSynopsis(movieJson.get("synopsis").getAsString());
+                movie.setThumbUrl(posters.get("profile").getAsString()
+                        .replace("_tmb", "_320"));
+                movie.setPosterUrl(posters.get("detailed").getAsString()
+                        .replace("_tmb", "_640"));
+
+                try {
+                    JsonObject releaseDates = movieJson
+                            .get("release_dates").getAsJsonObject();
+                    String datestr = releaseDates.get("theater")
+                            .getAsString();
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                    movie.setReleaseDate(df.parse(datestr));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    movie.setScore(movieJson.get("ratings")
+                            .getAsJsonObject().get("critics_score")
+                            .getAsInt());
+                } catch (Exception e) {
+                    // No need to handle this exception
+                }
+                */
+                result.add(photo);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get a list of movies currently playing in theaters.
+     *
+     * @return a list of Movie objects
+     */
+    @Override
+    public Collection<Photo> getPhotos() {
+        return Collections.unmodifiableCollection(photos);
+    }
+
+
+    /**
+     * @param photoId
+     *            Photos's identifier
+     * @return A Photo instance for the given id.
+     */
+    @Override
+    public Photo getPhoto(final long photoId)
+    {
+        return Iterables.find( photos, new Predicate<Photo>() {
+            @Override
+            public boolean apply(Photo input) {
+                return input.getId() == photoId;
+            }
+        });
+    }
+
+    /**
+     * =========================================================================
      * Countries, cities, theaters and rooms
      * =========================================================================
      */
@@ -346,8 +504,8 @@ public class DummyDataProvider implements DataProvider {
     /**
      * Parse the list of countries and cities
      */
-    private static Multimap<String, String> loadTheaterData() {
-
+    private static Multimap<String, String> loadTheaterData()
+    {
         /* First, read the text file into a string */
         StringBuffer fileData = new StringBuffer(2000);
         BufferedReader reader = new BufferedReader(new InputStreamReader(
