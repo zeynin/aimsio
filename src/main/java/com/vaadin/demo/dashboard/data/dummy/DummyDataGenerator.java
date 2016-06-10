@@ -189,20 +189,12 @@ public abstract class DummyDataGenerator {
             "https://www.google.com/accounts/OAuthLogin");
 //https://www.googleapis.com/auth/plus.login
 
-    // 500px test application at http://localhost:8080 - doesn't work...yet
+    // 500px test application at http://localhost:8080
     public static final ApiInfo _500PX_API = new ApiInfo("500px",
             Px500Api.class,
             "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
             "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",
             "https://api.500px.com/v1/oauth/authorize");
-//https://api.500px.com/v1/oauth/authorize?oauth_token=zqY2kFgULeIuQJgvNsd9wQQwxBMTxVn21kLO0sOF
-
-    // 500px test application at http://localhost:8080 - get json
-    public static final ApiInfo _500PX_GET_JSON = new ApiInfo("500px",
-            Px500Api.class,
-            "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
-            "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",
-            "https://api.500px.com/v1/photos?feature=popular");
 
     // LinkedIn test application at http://localhost:8080
     public static final ApiInfo LINKEDIN_API = new ApiInfo("LinkedIn",

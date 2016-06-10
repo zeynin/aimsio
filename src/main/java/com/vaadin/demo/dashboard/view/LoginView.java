@@ -37,6 +37,8 @@ import org.vaadin.addon.oauthpopup.buttons.TwitterButton;
 @SuppressWarnings("serial")
 public class LoginView extends VerticalLayout
 {
+    private static Button signin;
+
     public LoginView()
     {
         setSizeFull();
@@ -85,7 +87,7 @@ public class LoginView extends VerticalLayout
         password.setIcon(FontAwesome.LOCK);
         password.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
 
-        final Button signin = new Button("Sign In");
+        signin = new Button("Sign In");
         signin.addStyleName(ValoTheme.BUTTON_PRIMARY);
         signin.setClickShortcut(KeyCode.ENTER);
         signin.focus();
@@ -209,34 +211,10 @@ public class LoginView extends VerticalLayout
 		public void authSuccessful(final String accessToken,
 				final String accessTokenSecret, String oauthRawResponse)
         {
-            //DummyDataProvider.getDynamicCarouselFeed( service,
-            //        accessToken, accessTokenSecret );
             ApiInfo getJson = new ApiInfo( "500pxJSON", Px500Api.class, accessToken, accessTokenSecret, "https://api.500px.com/v1/photos?feature=popular" );
             DummyDataProvider.getDynamicCarouselFeed( getJson, accessToken, accessTokenSecret );
 
-            /*
-			hola.addComponent(new Label("Authorized " + service.getName() + "." ));
-			Button testButton = new Button("Test " + service.getName() + " API");
-			testButton.addStyleName( BaseTheme.BUTTON_LINK);
-			hola.addComponent(testButton);
-            testButton.addClickListener(new ClickListener()
-            {
-                @Override
-                public void buttonClick(final ClickEvent event)
-                {
-                    GetDynamicComponent get =  new GetDynamicComponent( service, accessToken, accessTokenSecret );
-					Window w = new Window(service.getName(), get);
-					w.center();
-					w.setWidth("75%");
-					w.setHeight("75%");
-					addWindow(w);
-                }
-            });
-*/
-            /*
-            DashboardEventBus.post(new UserLoginRequestedEvent(
-                    accessToken, accessTokenSecret ));
-                    */
+            signin.click();
  		}
 
 		@Override
