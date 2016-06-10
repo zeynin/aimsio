@@ -89,7 +89,7 @@ public class DummyDataProvider implements DataProvider {
         movies = loadMoviesData();
         transactions = generateTransactionsData();
         revenue = countRevenues();
-        photos = loadPhotoData();
+        photos = loadFlickrPhotoData();
     }
 
     /**
@@ -362,7 +362,7 @@ public class DummyDataProvider implements DataProvider {
      *
      * @return FlickrPhoto
      */
-    private static Collection<FlickrPhoto> loadPhotoData()
+    private static Collection<FlickrPhoto> loadFlickrPhotoData()
     {
         JsonObject json = null;
         File cache;
@@ -450,62 +450,24 @@ public class DummyDataProvider implements DataProvider {
         });
     }
 
+
     /*
-package org.vaadin.addon.oauthpopup.demo;
 
-import org.scribe.builder.ServiceBuilder;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.oauth.OAuthService;
-
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.TextArea;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
-
-@SuppressWarnings("serial")
-class GetTestComponent extends Panel {
-
-	private final VerticalLayout layout = new VerticalLayout();
-	private final Token accessToken;
-	private final ApiInfo service;
-	private TextArea responseArea;
-
-	GetTestComponent(ApiInfo service, String accessToken, String accessTokenSecret) {
-		setSizeFull();
-
-		setContent(layout);
-		layout.setSizeFull();
-
+	private void GetTestComponent(ApiInfo service, String accessToken, String accessTokenSecret)
+	{
 		this.service = service;
 		this.accessToken = new Token(accessToken, accessTokenSecret);
 
-		layout.setMargin(true);
-		final TextField field = new TextField("Request:", service.exampleGetRequest);
-		field.setWidth("100%");
-		layout.addComponent(field);
+		//final TextField field = new TextField("Request:", service.exampleGetRequest);
 
-		Button bu = new Button("GET");
-		layout.addComponent(bu);
-		bu.addClickListener(new ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				sendGet(field.getValue());
-			}
-		});
+    	sendGet(field.getValue());
 
-		responseArea = new TextArea("Response:");
-		responseArea.setSizeFull();
-		layout.addComponent(responseArea);
-		layout.setExpandRatio(responseArea, 1);
+		//responseArea = new TextArea("Response:");
+		//responseArea.setSizeFull();
 	}
 
-	private void sendGet(String get) {
+	private void sendGet(String get) 
+	{
 		OAuthRequest request = new OAuthRequest(Verb.GET, get);
 		createOAuthService().signRequest(accessToken, request);
 		Response resp = request.send();
@@ -513,7 +475,8 @@ class GetTestComponent extends Panel {
 
 	}
 
-	private OAuthService createOAuthService() {
+	private OAuthService createOAuthService() 
+	{
 		ServiceBuilder sb = new ServiceBuilder();
 		sb.provider(service.scribeApi);
 		sb.apiKey(service.apiKey);

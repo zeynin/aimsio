@@ -7,6 +7,7 @@ import com.vaadin.demo.dashboard.domain.DashboardNotification;
 
 import org.scribe.builder.api.FacebookApi;
 import org.scribe.builder.api.LinkedInApi;
+import org.scribe.builder.api.Px500Api;
 import org.scribe.builder.api.TwitterApi;
 import org.vaadin.addon.oauthpopup.buttons.GitHubApi;
 import org.vaadin.addon.oauthpopup.buttons.GooglePlusApi;
@@ -180,13 +181,21 @@ public abstract class DummyDataGenerator {
             "dd59293cda395bf38a88044c22937e7e",
             "https://graph.facebook.com/me");
 
-    // Facebook test application at http://localhost:8080
+    // GPlus test application at http://localhost:8080
     public static final ApiInfo GOOGLEPLUS_API = new ApiInfo("GooglePlus",
             GooglePlusApi.class,
             "xHkW9aeTnoYk4k1lUYicCjbKY9VXjYOWxE3OsBt8",
             "Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM",
-            "https://www.googleapis.com");
+            "https://www.google.com/accounts/OAuthLogin");
+//https://www.googleapis.com/auth/plus.login
 
+    // 500px test application at http://localhost:8080 - doesn't work...yet
+    public static final ApiInfo _500PX_API = new ApiInfo("Git",
+            Px500Api.class,
+            "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
+            "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",
+            "https://api.500px.com/v1/oauth/authorize");
+//https://api.500px.com/v1/oauth/authorize?oauth_token=zqY2kFgULeIuQJgvNsd9wQQwxBMTxVn21kLO0sOF
     // LinkedIn test application at http://localhost:8080
     public static final ApiInfo LINKEDIN_API = new ApiInfo("LinkedIn",
             LinkedInApi.class,

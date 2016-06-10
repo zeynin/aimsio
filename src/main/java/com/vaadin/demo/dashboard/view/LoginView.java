@@ -22,11 +22,11 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.BaseTheme;
 import com.vaadin.ui.themes.ValoTheme;
 
 import org.vaadin.addon.oauthpopup.OAuthListener;
 import org.vaadin.addon.oauthpopup.OAuthPopupButton;
+import org.vaadin.addon.oauthpopup.OAuthPopupOpener;
 import org.vaadin.addon.oauthpopup.buttons.FacebookButton;
 import org.vaadin.addon.oauthpopup.buttons.GitHubButton;
 import org.vaadin.addon.oauthpopup.buttons.GooglePlusButton;
@@ -37,7 +37,8 @@ import org.vaadin.addon.oauthpopup.buttons.TwitterButton;
 public class LoginView extends VerticalLayout
 {
 
-    public LoginView() {
+    public LoginView()
+    {
         setSizeFull();
 
         Component loginForm = buildLoginForm();
@@ -118,28 +119,17 @@ public class LoginView extends VerticalLayout
         labels.addComponent(title);
         return labels;
     }
-    /* taken from demo */
 
-/*
-	private final VerticalLayout layout = new VerticalLayout();
+    private Component buildOauthButtons()
+    {
+        HorizontalLayout buttons = new HorizontalLayout();
+        buttons.setSpacing(true);
+        buttons.addStyleName("buttons");
+        buttons.addComponents( add500pxButton(), addTwitterButton(), addLinkedInButton(), addGitHubButton() );
 
-	@Override
-	protected void init(VaadinRequest request) {
+        return buttons;
+    }
 
-		layout.setMargin(true);
-		layout.setSpacing(true);
-
-		addTwitterButton();
-		addFacebookButton();
-		addLinkedInButton();
-		addGitHubButton();
-
-		addTwitterNativeButton();
-
-		layout.addComponent(new Link("Add-on at Vaadin Directory", new ExternalResource("http://vaadin.com/addon/oauth-popup-add-on")));
-		layout.addComponent(new Link("Source code at GitHub", new ExternalResource("https://github.com/ahn/vaadin-oauthpopup")));
-	}
-*/
 	private Component addTwitterButton()
     {
 		ApiInfo api = DummyDataGenerator.TWITTER_API;
@@ -155,7 +145,8 @@ public class LoginView extends VerticalLayout
         return button;
 	}
 
-    private Component addGPlusButton() {
+    private Component addGPlusButton()
+    {
         ApiInfo api = DummyDataGenerator.GOOGLEPLUS_API;
         OAuthPopupButton button = new GooglePlusButton(api.apiKey, api.apiSecret);
         addButton(api, button);
@@ -175,21 +166,32 @@ public class LoginView extends VerticalLayout
 		addButton(api, button);
         return button;
 	}
-/*
-	private void addTwitterNativeButton() {
-		final NativeButton b = new NativeButton("Another Twitter Auth Button");
 
+	private Component add500pxButton()
+    {
+		//final NativeButton b = new NativeButton("500px");
+        final OAuthPopupButton b = new OAuthPopupButton( DummyDataGenerator._500PX_API.scribeApi,
+                DummyDataGenerator._500PX_API.apiKey,
+                DummyDataGenerator._500PX_API.apiSecret );
+        b.setCaption( "500px" );
+        b.setIcon( FontAwesome._500PX );
 		OAuthPopupOpener opener = new OAuthPopupOpener(
-				TWITTER_API.scribeApi,
-				TWITTER_API.apiKey,
-				TWITTER_API.apiSecret);
+                DummyDataGenerator._500PX_API.scribeApi,
+                DummyDataGenerator._500PX_API.apiKey,
+                DummyDataGenerator._500PX_API.apiSecret);
 		opener.extend(b);
 		opener.addOAuthListener(new OAuthListener() {
 			@Override
 			public void authSuccessful(String accessToken,
-					String accessTokenSecret, String oauthRawResponse) {
+					String accessTokenSecret, String oauthRawResponse)
+            {
 				Notification.show("authSuccessful");
-			}
+                System.out.println( "accessToken " + accessToken
+                + "accessTokenSecret " + accessTokenSecret
+                + "oauthRawResponse " + oauthRawResponse );
+                DashboardEventBus.post(new UserLoginRequestedEvent(
+                        accessToken, accessTokenSecret ));
+            }
 
 			@Override
 			public void authDenied(String reason) {
@@ -197,25 +199,22 @@ public class LoginView extends VerticalLayout
 			}
 		});
 
-		layout.addComponent(b);
+		return b;
 	}
-*/
-	private void addButton( final ApiInfo service, OAuthPopupButton button) {
 
-    // In most browsers "resizable" makes the popup
-    // open in a new window, not in a tab.
-    // You can also set size with eg. "resizable,width=400,height=300"
-    button.setPopupWindowFeatures("resizable,width=400,height=300");
+    private void addButton( final ApiInfo service, OAuthPopupButton button)
+    {
+        // In most browsers "resizable" makes the popup
+        // open in a new window, not in a tab.
+        // You can also set size with eg. "resizable,width=400,height=300"
+        button.setPopupWindowFeatures("resizable,width=400,height=300");
 
-    HorizontalLayout hola = new HorizontalLayout();
-    hola.setSpacing(true);
-    hola.addComponent(button);
+        HorizontalLayout hola = new HorizontalLayout();
+        hola.setSpacing(true);
+        hola.addComponent(button);
 
-    //layout.addComponent(hola);
-
-    button.addOAuthListener(new Listener(service, hola));
-}
-
+        button.addOAuthListener(new Listener(service, hola));
+    }
 	private class Listener implements OAuthListener
     {
 
@@ -232,28 +231,20 @@ public class LoginView extends VerticalLayout
 				final String accessTokenSecret, String oauthRawResponse)
         {
 			hola.addComponent(new Label("Authorized " + service.name + "." ));
-
+/*
 			Button testButton = new Button("Test " + service.name + " API");
 			testButton.addStyleName( BaseTheme.BUTTON_LINK);
 			hola.addComponent(testButton);
-			testButton.addClickListener(new ClickListener()
+            testButton.addClickListener(new ClickListener()
             {
-				@Override
-				public void buttonClick(ClickEvent event)
-                {
-                    int i = 0;
-                    /*
-					GetTestComponent get = new GetTestComponent(service,
-							accessToken, accessTokenSecret);
-					Window w = new Window(service.name, get);
-					w.center();
-					w.setWidth("75%");
-					w.setHeight("75%");
-					addWindow(w);
-					*/
-				}
-			});
-
+                @Override
+                public void buttonClick(final ClickEvent event)
+                {*/
+                    DashboardEventBus.post(new UserLoginRequestedEvent(
+                            accessToken, accessTokenSecret ));
+               /* }
+            });
+*/
 		}
 
 		@Override
@@ -262,129 +253,4 @@ public class LoginView extends VerticalLayout
 		}
 	}
 
-
-
-    private Component buildOauthButtons()
-    {
-        HorizontalLayout buttons = new HorizontalLayout();
-        buttons.setSpacing(true);
-        buttons.addStyleName("buttons");
-
-        buttons.addComponents( addGPlusButton(), addTwitterButton(), addLinkedInButton(), addGitHubButton() );
-/*
-        OAuthPopupButton gplus, facebook, linkedin, twitter;
-        String key = "xHkW9aeTnoYk4k1lUYicCjbKY9VXjYOWxE3OsBt8";
-        String secret = "Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM";
-
-        // GPlus
-        gplus = new GooglePlusButton( key, secret );
-
-        // Facebook; you could ask for email w/ this
-        facebook = new FacebookButton( key, secret );
-
-        // LinkedIn
-        linkedin = new LinkedInButton( key, secret );
-
-        // Twitter
-        twitter = new TwitterButton( key, secret );
-
-        OAuthListener oauthListener = new OAuthListener()
-        {
-            @Override
-            public void authSuccessful(String accessToken, String accessTokenSecret, String accessRawResp )
-            {
-                Notification.show("Authorized");
-                // TODO: do something with the access token
-            }
-
-            @Override
-            public void authDenied(String reason)
-            {
-                Notification.show("Authorization denied");
-            }
-        };
-
-        gplus.addOAuthListener( oauthListener );
-        facebook.addOAuthListener( oauthListener );
-        linkedin.addOAuthListener( oauthListener );
-        twitter.addOAuthListener( oauthListener );
-
-        buttons.addComponents( gplus, facebook, linkedin, twitter );
-*/
-        return buttons;
-    }
-
-/*
-    private Component buildGPlusLogin()
-    {
-        String GPLUS_KEY = "xHkW9aeTnoYk4k1lUYicCjbKY9VXjYOWxE3OsBt8";
-        String GPLUS_SECRET = "Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM";
-
-        OAuthPopupButton ob = new GooglePlusButton( GPLUS_KEY, GPLUS_SECRET );
-
-        ob.addOAuthListener(new OAuthListener() {
-            @Override
-            public void authSuccessful(String accessToken, String accessTokenSecret, String accessRawResp )
-            {
-                Notification.show("Authorized");
-                // TODO: do something with the access token
-            }
-
-            @Override
-            public void authDenied(String reason)
-            {
-                Notification.show("Authorization denied");
-            }
-        });
-
-        return ob;
-    }
-
-    private Component buildFacebookLogin()
-    {
-        String FACEBOOK_KEY = "xHkW9aeTnoYk4k1lUYicCjbKY9VXjYOWxE3OsBt8";
-        String FACEBOOK_SECRET = "Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM";
-
-        OAuthPopupButton ob = new FacebookButton( FACEBOOK_KEY, FACEBOOK_SECRET );
-
-        return ob;
-    }
-
-    private Component buildLinkedInLogin()
-    {
-        String LINKEDIN_KEY = "xHkW9aeTnoYk4k1lUYicCjbKY9VXjYOWxE3OsBt8";
-        String LINKEDIN_SECRET = "Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM";
-
-        OAuthPopupButton ob = new FacebookButton( LINKEDIN_KEY, LINKEDIN_SECRET );
-
-        return ob;
-    }
-*/
-/*
-    private Component buildOtherLogin()
-    {
-        OAuthListener oauthListener = new OAuthListener()
-        {
-            public void userAuthenticated(User user) {
-                OAuthWindow.this.setContent(new LoggedInView(user));
-            }
-
-            public void failed(String reason) {
-                OAuthWindow.this.showNotification("Login failed", reason,
-                        Notification.TYPE_ERROR_MESSAGE);
-            }
-        };
-        // LinkedIn
-        addComponent(new LinkedinButton("LINKEDIN_API_KEY", "LINKEDIN_API_SECRET",
-                oauthListener));
-
-        // Facebook; you could ask for email w/ this
-        addComponent(new FacebookButton("FACEBOOK_API_KEY",
-                "FACEBOOK_API_SECRET", oauthListener));
-
-        // Twitter
-        addComponent(new TwitterButton("TWITTER_API_KEY",
-                "TWITTER_API_SECRET", oauthListener));
-    }
-*/
 }
