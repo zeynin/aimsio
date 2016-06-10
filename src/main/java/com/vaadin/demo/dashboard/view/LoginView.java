@@ -1,6 +1,7 @@
 package com.vaadin.demo.dashboard.view;
 
 import com.vaadin.demo.dashboard.data.dummy.DummyDataGenerator;
+import com.vaadin.demo.dashboard.data.dummy.DummyDataProvider;
 import com.vaadin.demo.dashboard.domain.ApiInfo;
 import com.vaadin.demo.dashboard.event.DashboardEvent.UserLoginRequestedEvent;
 import com.vaadin.demo.dashboard.event.DashboardEventBus;
@@ -24,6 +25,7 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
+import org.scribe.builder.api.Px500Api;
 import org.vaadin.addon.oauthpopup.OAuthListener;
 import org.vaadin.addon.oauthpopup.OAuthPopupButton;
 import org.vaadin.addon.oauthpopup.buttons.FacebookButton;
@@ -35,7 +37,6 @@ import org.vaadin.addon.oauthpopup.buttons.TwitterButton;
 @SuppressWarnings("serial")
 public class LoginView extends VerticalLayout
 {
-
     public LoginView()
     {
         setSizeFull();
@@ -176,35 +177,7 @@ public class LoginView extends VerticalLayout
         b.setCaption( "500px" );
         b.setIcon( FontAwesome._500PX );
         addButton( api, b );
-/*
-		OAuthPopupOpener opener = new OAuthPopupOpener(
-                DummyDataGenerator._500PX_API.scribeApi,
-                DummyDataGenerator._500PX_API.apiKey,
-                DummyDataGenerator._500PX_API.apiSecret);
-		opener.extend(b);
-		opener.addOAuthListener(new OAuthListener() {
-			@Override
-			public void authSuccessful(String accessToken,
-					String accessTokenSecret, String oauthRawResponse)
-            {
-				Notification.show("authSuccessful");
-                System.out.println( "accessToken " + accessToken
-                + "accessTokenSecret " + accessTokenSecret
-                + "oauthRawResponse " + oauthRawResponse );
 
-                // figure out a way to save these variables  accessToken, accessTokenSecret
-                new UserLoginRequestedEvent( accessToken, accessTokenSecret );
-            }
-
-			@Override
-			public void authDenied(String reason) {
-				Notification.show("authDenied");
-			}
-		});
-
-        new UserLoginRequestedEvent( DummyDataGenerator._500PX_API.getApiKey(),
-                DummyDataGenerator._500PX_API.getApiSecret() );
-*/
 		return b;
 	}
 
@@ -236,7 +209,12 @@ public class LoginView extends VerticalLayout
 		public void authSuccessful(final String accessToken,
 				final String accessTokenSecret, String oauthRawResponse)
         {
-/*
+            //DummyDataProvider.getDynamicCarouselFeed( service,
+            //        accessToken, accessTokenSecret );
+            ApiInfo getJson = new ApiInfo( "500pxJSON", Px500Api.class, accessToken, accessTokenSecret, "https://api.500px.com/v1/photos?feature=popular" );
+            DummyDataProvider.getDynamicCarouselFeed( getJson, accessToken, accessTokenSecret );
+
+            /*
 			hola.addComponent(new Label("Authorized " + service.getName() + "." ));
 			Button testButton = new Button("Test " + service.getName() + " API");
 			testButton.addStyleName( BaseTheme.BUTTON_LINK);
@@ -262,7 +240,8 @@ public class LoginView extends VerticalLayout
  		}
 
 		@Override
-		public void authDenied(String reason) {
+		public void authDenied(String reason)
+        {
 			hola.addComponent(new Label("Auth failed."));
 		}
 	}

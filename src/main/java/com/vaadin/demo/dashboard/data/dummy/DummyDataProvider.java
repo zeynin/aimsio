@@ -14,6 +14,7 @@ import com.google.gson.JsonParser;
 import com.vaadin.data.util.sqlcontainer.connection.JDBCConnectionPool;
 import com.vaadin.data.util.sqlcontainer.connection.SimpleJDBCConnectionPool;
 import com.vaadin.demo.dashboard.data.DataProvider;
+import com.vaadin.demo.dashboard.domain.ApiInfo;
 import com.vaadin.demo.dashboard.domain.DashboardNotification;
 import com.vaadin.demo.dashboard.domain.FlickrPhoto;
 import com.vaadin.demo.dashboard.domain.Movie;
@@ -23,6 +24,13 @@ import com.vaadin.demo.dashboard.domain.Transaction;
 import com.vaadin.demo.dashboard.domain.User;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.util.CurrentInstance;
+
+import org.scribe.builder.ServiceBuilder;
+import org.scribe.model.OAuthRequest;
+import org.scribe.model.Response;
+import org.scribe.model.Token;
+import org.scribe.model.Verb;
+import org.scribe.oauth.OAuthService;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -74,6 +82,8 @@ public class DummyDataProvider implements DataProvider {
     private final Collection<DashboardNotification> notifications = DummyDataGenerator
             .randomNotifications();
 
+    private static String px500Response;
+
     /**
      * Initialize the data for this application.
      */
@@ -92,6 +102,11 @@ public class DummyDataProvider implements DataProvider {
         transactions = generateTransactionsData();
         revenue = countRevenues();
         flickrPhotos = loadFlickrPhotoData();
+        photos = loadPx500PhotoData();
+    }
+
+    public static void refreshDynamicData()
+    {
         photos = loadPx500PhotoData();
     }
 
@@ -469,7 +484,16 @@ public class DummyDataProvider implements DataProvider {
         File baseDirectory = vaadinRequest.getService().getBaseDirectory();
         cache = new File(baseDirectory + "/photos_500px.txt");
 
-        json = readJsonFeed( cache, cache, /*_500PX_API_KEY*/ null, "" );
+        if( px500Response == null )
+        {
+            json = readJsonFeed( cache, cache, null, "" );
+        }
+        else
+        {
+            JsonElement jelement = new JsonParser().parse( px500Response );
+            json = jelement.getAsJsonObject();
+
+        }
 
         Collection<PxPhoto> result = new ArrayList<PxPhoto>();
 
@@ -477,19 +501,21 @@ public class DummyDataProvider implements DataProvider {
         {
             JsonArray photosJson;
             photosJson = json.getAsJsonArray("photos");
+            JsonObject photoJson;
+            PxPhoto photo;
 
             for (int i = 0; i < photosJson.size(); i++)
             {
-                JsonObject photoJson = photosJson.get(i).getAsJsonObject();
-                PxPhoto photo = new PxPhoto();
-                photo.setId(i);//photoJson.get("id").getAsLong());
-                photo.setName(photoJson.get("name").getAsString());
-                photo.setImageUrl(photoJson.get("image_url").getAsString());
-                photo.setDescription(photoJson.get("description").getAsString());
-                JsonObject user = photoJson.get("user").getAsJsonObject();
+                photoJson = photosJson.get(i).getAsJsonObject();
+                photo = new PxPhoto();
 
                 try
                 {
+                    photo.setId(i);//photoJson.get("id").getAsLong());
+                    photo.setName(photoJson.get("name").getAsString());
+                    photo.setImageUrl(photoJson.get("image_url").getAsString());
+                    photo.setDescription(photoJson.get("description").getAsString());
+                    JsonObject user = photoJson.get("user").getAsJsonObject();
                     photo.setUsername(user.get("username").getAsString());
                 }
                 catch (Exception e)
@@ -516,6 +542,36 @@ public class DummyDataProvider implements DataProvider {
 
         return result;
     }
+
+    public static void getDynamicCarouselFeed(  ApiInfo service,  final String accessToken,  final String accessTokenSecret )
+    {
+        ApiInfo px500Api = service;
+        Token token = new Token( accessToken, accessTokenSecret );
+        px500Response = sendGet( px500Api, token );
+    }
+
+    private static String sendGet( ApiInfo px500Api, Token token )
+    {
+        OAuthRequest request = new OAuthRequest( Verb.GET, px500Api.getExampleGetRequest()
+        + "&consumer_key=" + _500PX_API_KEY );
+        createOAuthService( px500Api ).signRequest(token, request);
+        Response resp = request.send();
+
+        return resp.getBody();
+    }
+
+    private static OAuthService createOAuthService( ApiInfo px500Api )
+    {
+        ServiceBuilder sb = new ServiceBuilder();
+        sb.provider(px500Api.getScribeApi());
+        sb.apiKey(px500Api.getApiKey());
+        sb.apiSecret(px500Api.getApiSecret());
+        sb.callback("http://www.google.fi");
+        return sb.build();
+    }
+
+
+
 
     /**
      * Get a list of movies currently playing in theaters.

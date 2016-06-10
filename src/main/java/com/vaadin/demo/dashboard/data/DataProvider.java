@@ -1,9 +1,9 @@
 package com.vaadin.demo.dashboard.data;
 
 import com.vaadin.demo.dashboard.domain.DashboardNotification;
+import com.vaadin.demo.dashboard.domain.FlickrPhoto;
 import com.vaadin.demo.dashboard.domain.Movie;
 import com.vaadin.demo.dashboard.domain.MovieRevenue;
-import com.vaadin.demo.dashboard.domain.FlickrPhoto;
 import com.vaadin.demo.dashboard.domain.PxPhoto;
 import com.vaadin.demo.dashboard.domain.Transaction;
 import com.vaadin.demo.dashboard.domain.User;
@@ -99,4 +99,7 @@ public interface DataProvider {
      * @return A Photo instance for the given id.
      */
     PxPhoto getPhoto( long photoId);
+
+//    void getDynamicCarouselFeed( ApiInfo service );
+
 }
