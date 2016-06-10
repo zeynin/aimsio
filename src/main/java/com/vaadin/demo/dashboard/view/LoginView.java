@@ -51,7 +51,7 @@ public class LoginView extends VerticalLayout
                 "Welcome to Zeynin's Demo");
         notification
                 .setDescription("<span>This application uses OAUTH delegate to leverage credentials " +
-                        "to stream photos from 500px. Please select 500px and enter your information.</span>");
+                        "to stream photos from 500px. Please select 500px and authorize.</span>");
         notification.setHtmlContentAllowed(true);
         notification.setStyleName("tray dark small closable login-help");
         notification.setPosition(Position.BOTTOM_CENTER);
@@ -127,8 +127,11 @@ public class LoginView extends VerticalLayout
     {
         HorizontalLayout buttons = new HorizontalLayout();
         buttons.setSpacing(true);
-        buttons.addStyleName("buttons");
-        buttons.addComponents( add500pxButton(), addTwitterButton(), addLinkedInButton(), addGitHubButton() );
+        buttons.addStyleName( ValoTheme.BUTTON_PRIMARY );
+        //buttons.addComponents( add500pxButton(), addTwitterButton(), addLinkedInButton(), addGitHubButton() );
+        Component px500btn = add500pxButton();
+        buttons.addComponent( px500btn );
+        buttons.setComponentAlignment( px500btn, Alignment.BOTTOM_LEFT );
 
         return buttons;
     }
