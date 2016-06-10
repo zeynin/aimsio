@@ -26,7 +26,6 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import org.vaadin.addon.oauthpopup.OAuthListener;
 import org.vaadin.addon.oauthpopup.OAuthPopupButton;
-import org.vaadin.addon.oauthpopup.OAuthPopupOpener;
 import org.vaadin.addon.oauthpopup.buttons.FacebookButton;
 import org.vaadin.addon.oauthpopup.buttons.GitHubButton;
 import org.vaadin.addon.oauthpopup.buttons.GooglePlusButton;
@@ -48,7 +47,8 @@ public class LoginView extends VerticalLayout
         Notification notification = new Notification(
                 "Welcome to Zeynin's Demo");
         notification
-                .setDescription("<span>This application uses OAUTH delegate to leverage credentials to stream photos from 500px. Please enter a valid user/password.</span>");
+                .setDescription("<span>This application uses OAUTH delegate to leverage credentials " +
+                        "to stream photos from 500px. Please select 500px and enter your information.</span>");
         notification.setHtmlContentAllowed(true);
         notification.setStyleName("tray dark small closable login-help");
         notification.setPosition(Position.BOTTOM_CENTER);
@@ -133,14 +133,14 @@ public class LoginView extends VerticalLayout
 	private Component addTwitterButton()
     {
 		ApiInfo api = DummyDataGenerator.TWITTER_API;
-		OAuthPopupButton button = new TwitterButton(api.apiKey, api.apiSecret);
+		OAuthPopupButton button = new TwitterButton(api.getApiKey(), api.getApiSecret());
 		addButton(api, button);
         return button;
 	}
 
 	private Component addFacebookButton() {
 		ApiInfo api = DummyDataGenerator.FACEBOOK_API;
-		OAuthPopupButton button = new FacebookButton(api.apiKey, api.apiSecret);
+		OAuthPopupButton button = new FacebookButton(api.getApiKey(), api.getApiSecret());
 		addButton(api, button);
         return button;
 	}
@@ -148,33 +148,35 @@ public class LoginView extends VerticalLayout
     private Component addGPlusButton()
     {
         ApiInfo api = DummyDataGenerator.GOOGLEPLUS_API;
-        OAuthPopupButton button = new GooglePlusButton(api.apiKey, api.apiSecret);
+        OAuthPopupButton button = new GooglePlusButton(api.getApiKey(), api.getApiSecret());
         addButton(api, button);
         return button;
     }
 
 	private Component addLinkedInButton() {
 		ApiInfo api = DummyDataGenerator.LINKEDIN_API;
-		OAuthPopupButton button = new LinkedInButton(api.apiKey, api.apiSecret);
+		OAuthPopupButton button = new LinkedInButton(api.getApiKey(), api.getApiSecret());
 		addButton(api, button);
         return button;
 	}
 
 	private Component addGitHubButton() {
 		ApiInfo api = DummyDataGenerator.GITHUB_API;
-		OAuthPopupButton button = new GitHubButton(api.apiKey, api.apiSecret);
+		OAuthPopupButton button = new GitHubButton(api.getApiKey(), api.getApiSecret());
 		addButton(api, button);
         return button;
 	}
 
 	private Component add500pxButton()
     {
-		//final NativeButton b = new NativeButton("500px");
-        final OAuthPopupButton b = new OAuthPopupButton( DummyDataGenerator._500PX_API.scribeApi,
-                DummyDataGenerator._500PX_API.apiKey,
-                DummyDataGenerator._500PX_API.apiSecret );
+        ApiInfo api = DummyDataGenerator._500PX_API;
+        OAuthPopupButton b = new OAuthPopupButton( DummyDataGenerator._500PX_API.getScribeApi(),
+                DummyDataGenerator._500PX_API.getApiKey(),
+                DummyDataGenerator._500PX_API.getApiSecret() );
         b.setCaption( "500px" );
         b.setIcon( FontAwesome._500PX );
+        addButton( api, b );
+/*
 		OAuthPopupOpener opener = new OAuthPopupOpener(
                 DummyDataGenerator._500PX_API.scribeApi,
                 DummyDataGenerator._500PX_API.apiKey,
@@ -189,8 +191,9 @@ public class LoginView extends VerticalLayout
                 System.out.println( "accessToken " + accessToken
                 + "accessTokenSecret " + accessTokenSecret
                 + "oauthRawResponse " + oauthRawResponse );
-                DashboardEventBus.post(new UserLoginRequestedEvent(
-                        accessToken, accessTokenSecret ));
+
+                // figure out a way to save these variables  accessToken, accessTokenSecret
+                new UserLoginRequestedEvent( accessToken, accessTokenSecret );
             }
 
 			@Override
@@ -199,6 +202,9 @@ public class LoginView extends VerticalLayout
 			}
 		});
 
+        new UserLoginRequestedEvent( DummyDataGenerator._500PX_API.getApiKey(),
+                DummyDataGenerator._500PX_API.getApiSecret() );
+*/
 		return b;
 	}
 
@@ -230,22 +236,30 @@ public class LoginView extends VerticalLayout
 		public void authSuccessful(final String accessToken,
 				final String accessTokenSecret, String oauthRawResponse)
         {
-			hola.addComponent(new Label("Authorized " + service.name + "." ));
 /*
-			Button testButton = new Button("Test " + service.name + " API");
+			hola.addComponent(new Label("Authorized " + service.getName() + "." ));
+			Button testButton = new Button("Test " + service.getName() + " API");
 			testButton.addStyleName( BaseTheme.BUTTON_LINK);
 			hola.addComponent(testButton);
             testButton.addClickListener(new ClickListener()
             {
                 @Override
                 public void buttonClick(final ClickEvent event)
-                {*/
-                    DashboardEventBus.post(new UserLoginRequestedEvent(
-                            accessToken, accessTokenSecret ));
-               /* }
+                {
+                    GetDynamicComponent get =  new GetDynamicComponent( service, accessToken, accessTokenSecret );
+					Window w = new Window(service.getName(), get);
+					w.center();
+					w.setWidth("75%");
+					w.setHeight("75%");
+					addWindow(w);
+                }
             });
 */
-		}
+            /*
+            DashboardEventBus.post(new UserLoginRequestedEvent(
+                    accessToken, accessTokenSecret ));
+                    */
+ 		}
 
 		@Override
 		public void authDenied(String reason) {

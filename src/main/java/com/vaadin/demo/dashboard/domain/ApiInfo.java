@@ -7,11 +7,11 @@ import org.scribe.builder.api.Api;
  */
 public class ApiInfo
 {
-    public final String name;
-    public final Class<? extends Api> scribeApi;
-    public final String apiKey;
-    public final String apiSecret;
-    public final String exampleGetRequest;
+    private final String name;
+    private final Class<? extends Api> scribeApi;
+    private final String apiKey;
+    private final String apiSecret;
+    private final String exampleGetRequest;
 
     public ApiInfo(String name, Class<? extends Api> scribeApi,
                    String apiKey, String apiSecret, String exampleGetRequest)
@@ -23,4 +23,14 @@ public class ApiInfo
         this.apiSecret = apiSecret;
         this.exampleGetRequest = exampleGetRequest;
     }
+
+    public String getName() { return name; }
+
+    public Class<? extends Api> getScribeApi() { return scribeApi; }
+
+    public String getApiKey() { return apiKey; }
+
+    public String getApiSecret() { return apiSecret; }
+
+    public String getExampleGetRequest() { return exampleGetRequest; }
 }

@@ -190,7 +190,7 @@ public abstract class DummyDataGenerator {
 //https://www.googleapis.com/auth/plus.login
 
     // 500px test application at http://localhost:8080 - doesn't work...yet
-    public static final ApiInfo _500PX_API = new ApiInfo("Git",
+    public static final ApiInfo _500PX_API = new ApiInfo("500px",
             Px500Api.class,
             "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
             "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",

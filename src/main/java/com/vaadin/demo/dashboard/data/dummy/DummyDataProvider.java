@@ -15,9 +15,10 @@ import com.vaadin.data.util.sqlcontainer.connection.JDBCConnectionPool;
 import com.vaadin.data.util.sqlcontainer.connection.SimpleJDBCConnectionPool;
 import com.vaadin.demo.dashboard.data.DataProvider;
 import com.vaadin.demo.dashboard.domain.DashboardNotification;
+import com.vaadin.demo.dashboard.domain.FlickrPhoto;
 import com.vaadin.demo.dashboard.domain.Movie;
 import com.vaadin.demo.dashboard.domain.MovieRevenue;
-import com.vaadin.demo.dashboard.domain.FlickrPhoto;
+import com.vaadin.demo.dashboard.domain.PxPhoto;
 import com.vaadin.demo.dashboard.domain.Transaction;
 import com.vaadin.demo.dashboard.domain.User;
 import com.vaadin.server.VaadinRequest;
@@ -57,7 +58,7 @@ public class DummyDataProvider implements DataProvider {
 
     // TODO: Get API key from http://developer.rottentomatoes.com
     private static final String ROTTEN_TOMATOES_API_KEY = null;
-    private static final String _500PX_API_KEY = "%22Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM%22";//"xHkW9aeTnoYk4k1lUYicCjbKY9VXjYOWxE3OsBt8"
+    private static final String _500PX_API_KEY = "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N";
 
     /* List of countries and cities for them */
     private static Multimap<String, String> countryToCities;
@@ -65,7 +66,8 @@ public class DummyDataProvider implements DataProvider {
     private static Collection<Movie> movies;
     private static Multimap<Long, Transaction> transactions;
     private static Multimap<Long, MovieRevenue> revenue;
-    private static Collection<FlickrPhoto> photos;
+    private static Collection<FlickrPhoto> flickrPhotos;
+    private static Collection<PxPhoto> photos;
 
     private static Random rand = new Random();
 
@@ -89,7 +91,8 @@ public class DummyDataProvider implements DataProvider {
         movies = loadMoviesData();
         transactions = generateTransactionsData();
         revenue = countRevenues();
-        photos = loadFlickrPhotoData();
+        flickrPhotos = loadFlickrPhotoData();
+        photos = loadPx500PhotoData();
     }
 
     /**
@@ -373,7 +376,6 @@ public class DummyDataProvider implements DataProvider {
 
         json = readJsonFeed( cache, cache, _500PX_API_KEY,
                 "https://api.flickr.com/services/feeds/photos_public.gne?format=json" );
-        //https://api.500px.com/v1/photos/oauth/authorize?oauth_token=%22Bxh2d4fDMCJm1DTMCYGY9PcfQ0gvJMwTC0McYVEM%22&oauth_callback=%22https://api.500px.com/v1/photos?feature=popular%22
 
         Collection<FlickrPhoto> result = new ArrayList<FlickrPhoto>();
 
@@ -428,9 +430,9 @@ public class DummyDataProvider implements DataProvider {
      * @return a list of Movie objects
      */
     @Override
-    public Collection<FlickrPhoto> getPhotos()
+    public Collection<FlickrPhoto> getFlickrPhotos()
     {
-        return Collections.unmodifiableCollection( photos );
+        return Collections.unmodifiableCollection( flickrPhotos );
     }
 
 
@@ -440,9 +442,9 @@ public class DummyDataProvider implements DataProvider {
      * @return A FlickrPhoto instance for the given id.
      */
     @Override
-    public FlickrPhoto getPhoto(final long photoId)
+    public FlickrPhoto getFlickrPhoto(final long photoId)
     {
-        return Iterables.find( photos, new Predicate<FlickrPhoto>() {
+        return Iterables.find( flickrPhotos, new Predicate<FlickrPhoto>() {
             @Override
             public boolean apply(FlickrPhoto input) {
                 return input.getId() == photoId;
@@ -451,41 +453,98 @@ public class DummyDataProvider implements DataProvider {
     }
 
 
-    /*
+    /**
+     * End with 500px feed. First get the JSON feed and then parse.
+     * Also created a backup text file.
+     *
+     * @return PxPhoto
+     */
+    private static Collection<PxPhoto> loadPx500PhotoData()
+    {
+        String resp = null;
+        JsonObject json = null;
+        File cache;
+        VaadinRequest vaadinRequest = CurrentInstance.get(VaadinRequest.class);
 
-	private void GetTestComponent(ApiInfo service, String accessToken, String accessTokenSecret)
-	{
-		this.service = service;
-		this.accessToken = new Token(accessToken, accessTokenSecret);
+        File baseDirectory = vaadinRequest.getService().getBaseDirectory();
+        cache = new File(baseDirectory + "/photos_500px.txt");
 
-		//final TextField field = new TextField("Request:", service.exampleGetRequest);
+        json = readJsonFeed( cache, cache, /*_500PX_API_KEY*/ null, "" );
 
-    	sendGet(field.getValue());
+        Collection<PxPhoto> result = new ArrayList<PxPhoto>();
 
-		//responseArea = new TextArea("Response:");
-		//responseArea.setSizeFull();
-	}
+        if (json != null)
+        {
+            JsonArray photosJson;
+            photosJson = json.getAsJsonArray("photos");
 
-	private void sendGet(String get) 
-	{
-		OAuthRequest request = new OAuthRequest(Verb.GET, get);
-		createOAuthService().signRequest(accessToken, request);
-		Response resp = request.send();
-		responseArea.setValue(resp.getBody());
+            for (int i = 0; i < photosJson.size(); i++)
+            {
+                JsonObject photoJson = photosJson.get(i).getAsJsonObject();
+                PxPhoto photo = new PxPhoto();
+                photo.setId(i);//photoJson.get("id").getAsLong());
+                photo.setName(photoJson.get("name").getAsString());
+                photo.setImageUrl(photoJson.get("image_url").getAsString());
+                photo.setDescription(photoJson.get("description").getAsString());
+                JsonObject user = photoJson.get("user").getAsJsonObject();
 
-	}
+                try
+                {
+                    photo.setUsername(user.get("username").getAsString());
+                }
+                catch (Exception e)
+                {
+                    // No need to handle this exception
+                    e.printStackTrace();
+                }
 
-	private OAuthService createOAuthService() 
-	{
-		ServiceBuilder sb = new ServiceBuilder();
-		sb.provider(service.scribeApi);
-		sb.apiKey(service.apiKey);
-		sb.apiSecret(service.apiSecret);
-		sb.callback("http://www.google.fi");
-		return sb.build();
-	}
-}
-*/
+                try
+                {
+                    String datestr = photoJson.get("created_at").getAsString();
+                    // "2016-06-09T06:26:59-04:00"
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                    photo.setDateTaken(df.parse(datestr));
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+                result.add( photo );
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get a list of movies currently playing in theaters.
+     *
+     * @return a list of Movie objects
+     */
+    @Override
+    public Collection<PxPhoto> getPhotos()
+    {
+        return Collections.unmodifiableCollection( photos );
+    }
+
+
+    /**
+     * @param photoId
+     *            Photos's identifier
+     * @return A PxPhoto instance for the given id.
+     */
+    @Override
+    public PxPhoto getPhoto(final long photoId)
+    {
+        return Iterables.find( photos, new Predicate<PxPhoto>() {
+            @Override
+            public boolean apply(PxPhoto input) {
+                return input.getId() == photoId;
+            }
+        });
+    }
+
 
     /**
      * =========================================================================

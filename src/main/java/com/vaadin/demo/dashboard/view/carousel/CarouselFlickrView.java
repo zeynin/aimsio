@@ -43,7 +43,7 @@ public final class CarouselFlickrView extends VerticalLayout implements View, Co
         carousel.setButtonsVisible( false );
         carousel.addComponentSelectListener( this );
 
-        for (final FlickrPhoto photo : DashboardUI.getDataProvider().getPhotos())
+        for (final FlickrPhoto photo : DashboardUI.getDataProvider().getFlickrPhotos())
         {
             Image photoFeed = new Image(null, new ExternalResource(
                     photo.getMediaLink() ) );
