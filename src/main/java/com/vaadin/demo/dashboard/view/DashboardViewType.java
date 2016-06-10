@@ -1,5 +1,7 @@
 package com.vaadin.demo.dashboard.view;
 
+import com.vaadin.demo.dashboard.view.carousel.CarouselFlickrView;
+import com.vaadin.demo.dashboard.view.carousel.CarouselView;
 import com.vaadin.demo.dashboard.view.dashboard.DashboardView;
 import com.vaadin.demo.dashboard.view.reports.ReportsView;
 import com.vaadin.demo.dashboard.view.sales.SalesView;
@@ -14,7 +16,9 @@ public enum DashboardViewType {
             "sales", SalesView.class, FontAwesome.BAR_CHART_O, false), TRANSACTIONS(
             "transactions", TransactionsView.class, FontAwesome.TABLE, false), REPORTS(
             "reports", ReportsView.class, FontAwesome.FILE_TEXT_O, true), SCHEDULE(
-            "schedule", ScheduleView.class, FontAwesome.CALENDAR_O, false);
+            "schedule", ScheduleView.class, FontAwesome.CALENDAR_O, false),
+    CAROUSEL( "500px", CarouselView.class, FontAwesome._500PX, false ),
+    FLICKR( "flickr", CarouselFlickrView.class, FontAwesome.FLICKR, false );
 
     private final String viewName;
     private final Class<? extends View> viewClass;

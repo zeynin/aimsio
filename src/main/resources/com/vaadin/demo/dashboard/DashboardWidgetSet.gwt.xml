@@ -31,4 +31,8 @@
     <inherits name="com.vaadin.addon.timeline.gwt.TimelineWidgetSet" />
 
     
+
+    
+
+    <inherits name="org.vaadin.virkki.carousel.CarouselWidgetSet" />
 </module>

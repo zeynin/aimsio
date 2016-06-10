@@ -1,5 +1,8 @@
 package com.vaadin.demo.dashboard.view;
 
+import com.vaadin.demo.dashboard.data.GetDynamicComponent;
+import com.vaadin.demo.dashboard.data.dummy.DummyDataGenerator;
+import com.vaadin.demo.dashboard.domain.ApiInfo;
 import com.vaadin.demo.dashboard.event.DashboardEvent.UserLoginRequestedEvent;
 import com.vaadin.demo.dashboard.event.DashboardEventBus;
 import com.vaadin.event.ShortcutAction.KeyCode;
@@ -20,12 +23,24 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
+import com.vaadin.ui.themes.BaseTheme;
 import com.vaadin.ui.themes.ValoTheme;
 
-@SuppressWarnings("serial")
-public class LoginView extends VerticalLayout {
+import org.vaadin.addon.oauthpopup.OAuthListener;
+import org.vaadin.addon.oauthpopup.OAuthPopupButton;
+import org.vaadin.addon.oauthpopup.buttons.FacebookButton;
+import org.vaadin.addon.oauthpopup.buttons.GitHubButton;
+import org.vaadin.addon.oauthpopup.buttons.GooglePlusButton;
+import org.vaadin.addon.oauthpopup.buttons.LinkedInButton;
+import org.vaadin.addon.oauthpopup.buttons.TwitterButton;
 
-    public LoginView() {
+@SuppressWarnings("serial")
+public class LoginView extends VerticalLayout
+{
+
+    public LoginView()
+    {
         setSizeFull();
 
         Component loginForm = buildLoginForm();
@@ -33,9 +48,10 @@ public class LoginView extends VerticalLayout {
         setComponentAlignment(loginForm, Alignment.MIDDLE_CENTER);
 
         Notification notification = new Notification(
-                "Welcome to Dashboard Demo");
+                "Welcome to Zeynin's Demo");
         notification
-                .setDescription("<span>This application is not real, it only demonstrates an application built with the <a href=\"https://vaadin.com\">Vaadin framework</a>.</span> <span>No username or password is required, just click the <b>Sign In</b> button to continue.</span>");
+                .setDescription("<span>This application uses OAUTH delegate to leverage credentials " +
+                        "to stream photos from 500px. Please select 500px and enter your information.</span>");
         notification.setHtmlContentAllowed(true);
         notification.setStyleName("tray dark small closable login-help");
         notification.setPosition(Position.BOTTOM_CENTER);
@@ -52,7 +68,9 @@ public class LoginView extends VerticalLayout {
 
         loginPanel.addComponent(buildLabels());
         loginPanel.addComponent(buildFields());
+        loginPanel.addComponent( buildOauthButtons() );
         loginPanel.addComponent(new CheckBox("Remember me", true));
+
         return loginPanel;
     }
 
@@ -97,12 +115,159 @@ public class LoginView extends VerticalLayout {
         welcome.addStyleName(ValoTheme.LABEL_COLORED);
         labels.addComponent(welcome);
 
-        Label title = new Label("QuickTickets Dashboard");
+        Label title = new Label("Zeynin's Dashboard");
         title.setSizeUndefined();
         title.addStyleName(ValoTheme.LABEL_H3);
         title.addStyleName(ValoTheme.LABEL_LIGHT);
         labels.addComponent(title);
         return labels;
     }
+
+    private Component buildOauthButtons()
+    {
+        HorizontalLayout buttons = new HorizontalLayout();
+        buttons.setSpacing(true);
+        buttons.addStyleName("buttons");
+        buttons.addComponents( add500pxButton(), addTwitterButton(), addLinkedInButton(), addGitHubButton() );
+
+        return buttons;
+    }
+
+	private Component addTwitterButton()
+    {
+		ApiInfo api = DummyDataGenerator.TWITTER_API;
+		OAuthPopupButton button = new TwitterButton(api.getApiKey(), api.getApiSecret());
+		addButton(api, button);
+        return button;
+	}
+
+	private Component addFacebookButton() {
+		ApiInfo api = DummyDataGenerator.FACEBOOK_API;
+		OAuthPopupButton button = new FacebookButton(api.getApiKey(), api.getApiSecret());
+		addButton(api, button);
+        return button;
+	}
+
+    private Component addGPlusButton()
+    {
+        ApiInfo api = DummyDataGenerator.GOOGLEPLUS_API;
+        OAuthPopupButton button = new GooglePlusButton(api.getApiKey(), api.getApiSecret());
+        addButton(api, button);
+        return button;
+    }
+
+	private Component addLinkedInButton() {
+		ApiInfo api = DummyDataGenerator.LINKEDIN_API;
+		OAuthPopupButton button = new LinkedInButton(api.getApiKey(), api.getApiSecret());
+		addButton(api, button);
+        return button;
+	}
+
+	private Component addGitHubButton() {
+		ApiInfo api = DummyDataGenerator.GITHUB_API;
+		OAuthPopupButton button = new GitHubButton(api.getApiKey(), api.getApiSecret());
+		addButton(api, button);
+        return button;
+	}
+
+	private Component add500pxButton()
+    {
+        ApiInfo api = DummyDataGenerator._500PX_API;
+        OAuthPopupButton b = new OAuthPopupButton( DummyDataGenerator._500PX_API.getScribeApi(),
+                DummyDataGenerator._500PX_API.getApiKey(),
+                DummyDataGenerator._500PX_API.getApiSecret() );
+        b.setCaption( "500px" );
+        b.setIcon( FontAwesome._500PX );
+        addButton( api, b );
+/*
+		OAuthPopupOpener opener = new OAuthPopupOpener(
+                DummyDataGenerator._500PX_API.scribeApi,
+                DummyDataGenerator._500PX_API.apiKey,
+                DummyDataGenerator._500PX_API.apiSecret);
+		opener.extend(b);
+		opener.addOAuthListener(new OAuthListener() {
+			@Override
+			public void authSuccessful(String accessToken,
+					String accessTokenSecret, String oauthRawResponse)
+            {
+				Notification.show("authSuccessful");
+                System.out.println( "accessToken " + accessToken
+                + "accessTokenSecret " + accessTokenSecret
+                + "oauthRawResponse " + oauthRawResponse );
+
+                // figure out a way to save these variables  accessToken, accessTokenSecret
+                new UserLoginRequestedEvent( accessToken, accessTokenSecret );
+            }
+
+			@Override
+			public void authDenied(String reason) {
+				Notification.show("authDenied");
+			}
+		});
+
+        new UserLoginRequestedEvent( DummyDataGenerator._500PX_API.getApiKey(),
+                DummyDataGenerator._500PX_API.getApiSecret() );
+*/
+		return b;
+	}
+
+    private void addButton( final ApiInfo service, OAuthPopupButton button)
+    {
+        // In most browsers "resizable" makes the popup
+        // open in a new window, not in a tab.
+        // You can also set size with eg. "resizable,width=400,height=300"
+        button.setPopupWindowFeatures("resizable,width=400,height=300");
+
+        HorizontalLayout hola = new HorizontalLayout();
+        hola.setSpacing(true);
+        hola.addComponent(button);
+
+        button.addOAuthListener(new Listener(service, hola));
+    }
+	private class Listener implements OAuthListener
+    {
+
+		private final ApiInfo service;
+		private final HorizontalLayout hola;
+
+		private Listener(ApiInfo service, HorizontalLayout hola) {
+			this.service = service;
+			this.hola = hola;
+		}
+
+		@Override
+		public void authSuccessful(final String accessToken,
+				final String accessTokenSecret, String oauthRawResponse)
+        {
+
+			hola.addComponent(new Label("Authorized " + service.getName() + "." ));
+			Button testButton = new Button("Test " + service.getName() + " API");
+			testButton.addStyleName( BaseTheme.BUTTON_LINK);
+			hola.addComponent(testButton);
+            testButton.addClickListener(new ClickListener()
+            {
+                @Override
+                public void buttonClick(final ClickEvent event)
+                {
+                    GetDynamicComponent get =  new GetDynamicComponent( service, accessToken, accessTokenSecret );
+					Window w = new Window(service.getName(), get);
+					w.center();
+					w.setWidth("75%");
+					w.setHeight("75%");
+					addWindow(w);
+                }
+            });
+
+            /*
+            DashboardEventBus.post(new UserLoginRequestedEvent(
+                    accessToken, accessTokenSecret ));
+                    */
+ 		}
+
+		@Override
+		public void authDenied(String reason) {
+			hola.addComponent(new Label("Auth failed."));
+		}
+	}
 
 }

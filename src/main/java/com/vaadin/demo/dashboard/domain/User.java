@@ -12,6 +12,19 @@ public final class User {
     private Integer newsletterSubscription;
     private String website;
     private String bio;
+    private String accessToken;
+    private String accessTokenSecret;
+
+    public String getAccessToken() { return accessToken; }
+
+    public void setAccessToken( final String accessToken ) { this.accessToken = accessToken; }
+
+    public String getAccessTokenSecret() { return accessTokenSecret; }
+
+    public void setAccessTokenSecret( final String accessTokenSecret )
+    {
+        this.accessTokenSecret = accessTokenSecret;
+    }
 
     public String getEmail() {
         return email;
