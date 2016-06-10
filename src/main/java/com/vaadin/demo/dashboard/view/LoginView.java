@@ -1,6 +1,5 @@
 package com.vaadin.demo.dashboard.view;
 
-import com.vaadin.demo.dashboard.data.GetDynamicComponent;
 import com.vaadin.demo.dashboard.data.dummy.DummyDataGenerator;
 import com.vaadin.demo.dashboard.domain.ApiInfo;
 import com.vaadin.demo.dashboard.event.DashboardEvent.UserLoginRequestedEvent;
@@ -23,8 +22,6 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.BaseTheme;
 import com.vaadin.ui.themes.ValoTheme;
 
 import org.vaadin.addon.oauthpopup.OAuthListener;
@@ -239,7 +236,7 @@ public class LoginView extends VerticalLayout
 		public void authSuccessful(final String accessToken,
 				final String accessTokenSecret, String oauthRawResponse)
         {
-
+/*
 			hola.addComponent(new Label("Authorized " + service.getName() + "." ));
 			Button testButton = new Button("Test " + service.getName() + " API");
 			testButton.addStyleName( BaseTheme.BUTTON_LINK);
@@ -257,7 +254,7 @@ public class LoginView extends VerticalLayout
 					addWindow(w);
                 }
             });
-
+*/
             /*
             DashboardEventBus.post(new UserLoginRequestedEvent(
                     accessToken, accessTokenSecret ));
