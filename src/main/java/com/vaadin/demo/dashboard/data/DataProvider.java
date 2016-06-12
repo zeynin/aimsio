@@ -104,4 +104,6 @@ public interface DataProvider {
 
     void getDynamicCarouselFeed( Token token );
 
+    void getUserInfo( Token token );
+
 }

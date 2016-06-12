@@ -189,13 +189,6 @@ public abstract class DummyDataGenerator {
             "https://www.google.com/accounts/OAuthLogin");
 //https://www.googleapis.com/auth/plus.login
 
-    // 500px test application at http://localhost:8080
-    public static final ApiInfo _500PX_API = new ApiInfo("500px",
-            Px500Api.class,
-            "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
-            "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",
-            "https://api.500px.com/v1/oauth/authorize");
-
     // LinkedIn test application at http://localhost:8080
     public static final ApiInfo LINKEDIN_API = new ApiInfo("LinkedIn",
             LinkedInApi.class,
@@ -210,10 +203,24 @@ public abstract class DummyDataGenerator {
             "https://api.github.com/user");
 
     // 500px test application at http://localhost:8080
+    public static final ApiInfo _500PX_API = new ApiInfo("500px",
+            Px500Api.class,
+            "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
+            "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",
+            "https://api.500px.com/v1/oauth/authorize");
+
+    // 500px test application at http://localhost:8080
     public static ApiInfo _500PXJSON_API = new ApiInfo("500pxJson",
             Px500Api.class,
             "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
             "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",
             "https://api.500px.com/v1/photos?feature=popular");
+
+    // 500px test application at http://localhost:8080
+    public static ApiInfo _500PXUSER_API = new ApiInfo("500pxUser",
+            Px500Api.class,
+            "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
+            "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",
+            "https://api.500px.com/v1/photos?feature=user");
 
 }

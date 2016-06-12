@@ -1,7 +1,6 @@
 package com.vaadin.demo.dashboard.view.carousel;
 
 import com.vaadin.demo.dashboard.DashboardUI;
-import com.vaadin.demo.dashboard.data.dummy.DummyDataProvider;
 import com.vaadin.demo.dashboard.domain.PxPhoto;
 import com.vaadin.demo.dashboard.event.DashboardEventBus;
 import com.vaadin.navigator.View;
@@ -43,7 +42,6 @@ public final class CarouselView extends VerticalLayout implements View, Componen
         carousel.setTransitionDuration(2000);
         carousel.setButtonsVisible( false );
         carousel.addComponentSelectListener( this );
-        DummyDataProvider.refreshDynamicData();
 
         for (final PxPhoto photo : DashboardUI.getDataProvider().getPhotos())
         {

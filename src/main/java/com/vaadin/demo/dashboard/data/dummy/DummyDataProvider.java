@@ -83,6 +83,9 @@ public class DummyDataProvider implements DataProvider {
             .randomNotifications();
 
     private static String px500Response;
+    private static boolean updatePx500Photos = false;
+    private static String px500User;
+    private static boolean updateUser = false;
 
     /**
      * Initialize the data for this application.
@@ -492,7 +495,6 @@ public class DummyDataProvider implements DataProvider {
         {
             JsonElement jelement = new JsonParser().parse( px500Response );
             json = jelement.getAsJsonObject();
-
         }
 
         Collection<PxPhoto> result = new ArrayList<PxPhoto>();
@@ -545,9 +547,25 @@ public class DummyDataProvider implements DataProvider {
 
     public void getDynamicCarouselFeed( Token token )
     {
-        ApiInfo px500Api = DummyDataGenerator._500PXJSON_API;
-        //Token token = token;
-        px500Response = sendGet( px500Api, token );
+        ApiInfo service = DummyDataGenerator._500PXJSON_API;
+        px500Response = sendGet( service, token );
+        updatePx500Photos = true;
+    }
+
+    public void getUserInfo( Token token )
+    {
+        ApiInfo service = DummyDataGenerator._500PXUSER_API;
+        px500User = sendPost( service, token );
+        updateUser = true;
+    }
+
+    private static String sendPost( ApiInfo px500Api, Token token )
+    {
+        OAuthRequest request = new OAuthRequest( Verb.POST, px500Api.getExampleGetRequest() );
+        createOAuthService( px500Api ).signRequest(token, request);
+        Response resp = request.send();
+
+        return resp.getBody();
     }
 
     private static String sendGet( ApiInfo px500Api, Token token )
@@ -581,6 +599,12 @@ public class DummyDataProvider implements DataProvider {
     @Override
     public Collection<PxPhoto> getPhotos()
     {
+        if( updatePx500Photos  )
+        {
+            refreshDynamicData();
+            updatePx500Photos = false;
+        }
+
         return Collections.unmodifiableCollection( photos );
     }
 
@@ -765,10 +789,37 @@ public class DummyDataProvider implements DataProvider {
     }
 
     @Override
-    public User authenticate(String userName, String password) {
+    public User authenticate(String userName, String password)
+    {
         User user = new User();
-        user.setFirstName( DummyDataGenerator.randomFirstName());
-        user.setLastName( DummyDataGenerator.randomLastName());
+
+        if( updateUser )
+        {
+            // parse the resulting json
+            updateUser = false;
+
+            JsonElement jelement = new JsonParser().parse( px500User );
+            JsonObject userJson = jelement.getAsJsonObject();
+
+            try
+            {
+                JsonObject record = userJson.get( "photo" ).getAsJsonObject();
+                JsonObject userElement = record.get( "user" ).getAsJsonObject();
+                user.setFirstName( userElement.get( "fullname" ).getAsString() );
+                user.setLastName( userElement.get( "lastname" ).getAsString() );
+            }
+            catch( Exception e )
+            {
+                user.setFirstName( DummyDataGenerator.randomFirstName() );
+                user.setLastName( DummyDataGenerator.randomLastName() );
+            }
+        }
+        else
+        {
+            user.setFirstName( DummyDataGenerator.randomFirstName() );
+            user.setLastName( DummyDataGenerator.randomLastName() );
+        }
+
         user.setRole("admin");
         String email = user.getFirstName().toLowerCase() + "."
                 + user.getLastName().toLowerCase() + "@"

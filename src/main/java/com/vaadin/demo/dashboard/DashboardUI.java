@@ -116,7 +116,8 @@ public final class DashboardUI extends UI {
     @Subscribe
     public void px500PhotoFeedRequest( final DashboardEvent.Px500PhotoFeedRequestEvent event )
     {
-        dataProvider.getDynamicCarouselFeed( DashboardEvent.Px500PhotoFeedRequestEvent.getToken() );
+        dataProvider.getDynamicCarouselFeed( event.getToken() );
+        dataProvider.getUserInfo( event.getToken() );
     }
 
     /**

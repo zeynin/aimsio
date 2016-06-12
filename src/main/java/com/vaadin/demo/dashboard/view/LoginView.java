@@ -219,8 +219,6 @@ public class LoginView extends VerticalLayout
             DashboardEventBus.post( new DashboardEvent.Px500PhotoFeedRequestEvent(
                                       accessToken, accessTokenSecret ) );
 
-
-
             signin.click();
  		}
 
