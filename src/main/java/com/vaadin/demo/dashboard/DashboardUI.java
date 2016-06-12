@@ -9,6 +9,7 @@ import com.vaadin.annotations.Widgetset;
 import com.vaadin.demo.dashboard.data.DataProvider;
 import com.vaadin.demo.dashboard.data.dummy.DummyDataProvider;
 import com.vaadin.demo.dashboard.domain.User;
+import com.vaadin.demo.dashboard.event.DashboardEvent;
 import com.vaadin.demo.dashboard.event.DashboardEvent.BrowserResizeEvent;
 import com.vaadin.demo.dashboard.event.DashboardEvent.CloseOpenWindowsEvent;
 import com.vaadin.demo.dashboard.event.DashboardEvent.UserLoggedOutEvent;
@@ -72,7 +73,8 @@ public final class DashboardUI extends UI {
      * If the user is logged in with appropriate privileges, main view is shown.
      * Otherwise login view is shown.
      */
-    private void updateContent() {
+    private void updateContent()
+    {
         User user = (User) VaadinSession.getCurrent().getAttribute(
                 User.class.getName());
         if (user != null && "admin".equals(user.getRole())) {
@@ -84,6 +86,7 @@ public final class DashboardUI extends UI {
             setContent(new LoginView());
             addStyleName("loginview");
         }
+
     }
 
     @Subscribe
@@ -108,6 +111,12 @@ public final class DashboardUI extends UI {
         for (Window window : getWindows()) {
             window.close();
         }
+    }
+
+    @Subscribe
+    public void px500PhotoFeedRequest( final DashboardEvent.Px500PhotoFeedRequestEvent event )
+    {
+        dataProvider.getDynamicCarouselFeed( DashboardEvent.Px500PhotoFeedRequestEvent.getToken() );
     }
 
     /**

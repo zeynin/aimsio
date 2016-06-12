@@ -543,10 +543,10 @@ public class DummyDataProvider implements DataProvider {
         return result;
     }
 
-    public static void getDynamicCarouselFeed(  ApiInfo service,  final String accessToken,  final String accessTokenSecret )
+    public void getDynamicCarouselFeed( Token token )
     {
-        ApiInfo px500Api = service;
-        Token token = new Token( accessToken, accessTokenSecret );
+        ApiInfo px500Api = DummyDataGenerator._500PXJSON_API;
+        //Token token = token;
         px500Response = sendGet( px500Api, token );
     }
 

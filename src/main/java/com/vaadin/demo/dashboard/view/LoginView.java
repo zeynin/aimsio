@@ -1,8 +1,8 @@
 package com.vaadin.demo.dashboard.view;
 
 import com.vaadin.demo.dashboard.data.dummy.DummyDataGenerator;
-import com.vaadin.demo.dashboard.data.dummy.DummyDataProvider;
 import com.vaadin.demo.dashboard.domain.ApiInfo;
+import com.vaadin.demo.dashboard.event.DashboardEvent;
 import com.vaadin.demo.dashboard.event.DashboardEvent.UserLoginRequestedEvent;
 import com.vaadin.demo.dashboard.event.DashboardEventBus;
 import com.vaadin.event.ShortcutAction.KeyCode;
@@ -25,7 +25,6 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
-import org.scribe.builder.api.Px500Api;
 import org.vaadin.addon.oauthpopup.OAuthListener;
 import org.vaadin.addon.oauthpopup.OAuthPopupButton;
 import org.vaadin.addon.oauthpopup.buttons.FacebookButton;
@@ -68,7 +67,6 @@ public class LoginView extends VerticalLayout
 
         loginPanel.addComponent(buildLabels());
         loginPanel.addComponent(buildFields());
-        loginPanel.addComponent( buildOauthButtons() );
         loginPanel.addComponent(new CheckBox("Remember me", true));
 
         return loginPanel;
@@ -92,12 +90,17 @@ public class LoginView extends VerticalLayout
         signin.setClickShortcut(KeyCode.ENTER);
         signin.focus();
 
+        final Component oauthBtn = add500pxButton();
+
         fields.addComponents(username, password, signin);
+        fields.addComponent( oauthBtn );
         fields.setComponentAlignment(signin, Alignment.BOTTOM_LEFT);
+        fields.setComponentAlignment(oauthBtn, Alignment.BOTTOM_LEFT);
 
         signin.addClickListener(new ClickListener() {
             @Override
-            public void buttonClick(final ClickEvent event) {
+            public void buttonClick(final ClickEvent event)
+            {
                 DashboardEventBus.post(new UserLoginRequestedEvent(username
                         .getValue(), password.getValue()));
             }
@@ -128,10 +131,7 @@ public class LoginView extends VerticalLayout
         HorizontalLayout buttons = new HorizontalLayout();
         buttons.setSpacing(true);
         buttons.addStyleName( ValoTheme.BUTTON_PRIMARY );
-        //buttons.addComponents( add500pxButton(), addTwitterButton(), addLinkedInButton(), addGitHubButton() );
-        Component px500btn = add500pxButton();
-        buttons.addComponent( px500btn );
-        buttons.setComponentAlignment( px500btn, Alignment.BOTTOM_LEFT );
+        buttons.addComponents( add500pxButton(), addTwitterButton(), addLinkedInButton(), addGitHubButton() );
 
         return buttons;
     }
@@ -199,9 +199,9 @@ public class LoginView extends VerticalLayout
 
         button.addOAuthListener(new Listener(service, hola));
     }
+
 	private class Listener implements OAuthListener
     {
-
 		private final ApiInfo service;
 		private final HorizontalLayout hola;
 
@@ -214,8 +214,12 @@ public class LoginView extends VerticalLayout
 		public void authSuccessful(final String accessToken,
 				final String accessTokenSecret, String oauthRawResponse)
         {
-            ApiInfo getJson = new ApiInfo( "500pxJSON", Px500Api.class, accessToken, accessTokenSecret, "https://api.500px.com/v1/photos?feature=popular" );
-            DummyDataProvider.getDynamicCarouselFeed( getJson, accessToken, accessTokenSecret );
+            // save token and update carousel feed. should use the dashboard event bus
+            // maybe photo feed could be stored there instead?
+            DashboardEventBus.post( new DashboardEvent.Px500PhotoFeedRequestEvent(
+                                      accessToken, accessTokenSecret ) );
+
+
 
             signin.click();
  		}

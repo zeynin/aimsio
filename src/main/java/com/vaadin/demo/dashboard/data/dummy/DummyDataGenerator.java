@@ -209,4 +209,11 @@ public abstract class DummyDataGenerator {
             "6a36b0992e5e2b00a38c44c21a6e0dc8ae01d83b",
             "https://api.github.com/user");
 
+    // 500px test application at http://localhost:8080
+    public static ApiInfo _500PXJSON_API = new ApiInfo("500pxJson",
+            Px500Api.class,
+            "5oJJ6EvqsIm5Tx1LQGl45Ke3sqo9I1XSzLjhA52N",
+            "wCBjfRcqQSLhnqaMY50B5CsYpwCBYwkoAFcZZHlR",
+            "https://api.500px.com/v1/photos?feature=popular");
+
 }

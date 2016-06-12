@@ -1,16 +1,20 @@
 package com.vaadin.demo.dashboard.event;
 
-import java.util.Collection;
-
 import com.vaadin.demo.dashboard.domain.Transaction;
 import com.vaadin.demo.dashboard.view.DashboardViewType;
+
+import org.scribe.model.Token;
+
+import java.util.Collection;
 
 /*
  * Event bus events used in Dashboard are listed here as inner classes.
  */
-public abstract class DashboardEvent {
+public abstract class DashboardEvent
+{
 
-    public static final class UserLoginRequestedEvent {
+    public static final class UserLoginRequestedEvent
+    {
         private final String userName, password;
 
         public UserLoginRequestedEvent(final String userName,
@@ -39,7 +43,8 @@ public abstract class DashboardEvent {
     public static class NotificationsCountUpdatedEvent {
     }
 
-    public static final class ReportsCountUpdatedEvent {
+    public static final class ReportsCountUpdatedEvent
+    {
         private final int count;
 
         public ReportsCountUpdatedEvent(final int count) {
@@ -52,7 +57,8 @@ public abstract class DashboardEvent {
 
     }
 
-    public static final class TransactionReportEvent {
+    public static final class TransactionReportEvent
+    {
         private final Collection<Transaction> transactions;
 
         public TransactionReportEvent(final Collection<Transaction> transactions) {
@@ -64,7 +70,8 @@ public abstract class DashboardEvent {
         }
     }
 
-    public static final class PostViewChangeEvent {
+    public static final class PostViewChangeEvent
+    {
         private final DashboardViewType view;
 
         public PostViewChangeEvent(final DashboardViewType view) {
@@ -80,6 +87,18 @@ public abstract class DashboardEvent {
     }
 
     public static class ProfileUpdatedEvent {
+    }
+
+    public static final class Px500PhotoFeedRequestEvent
+    {
+        private static Token token;
+
+        public Px500PhotoFeedRequestEvent( String accessToken, String accessTokenSecret )
+        {
+            this.token = new Token( accessToken, accessTokenSecret );
+        }
+
+        public static Token getToken() { return token; }
     }
 
 }

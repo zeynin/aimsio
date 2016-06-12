@@ -8,6 +8,8 @@ import com.vaadin.demo.dashboard.domain.PxPhoto;
 import com.vaadin.demo.dashboard.domain.Transaction;
 import com.vaadin.demo.dashboard.domain.User;
 
+import org.scribe.model.Token;
+
 import java.util.Collection;
 import java.util.Date;
 
@@ -100,6 +102,6 @@ public interface DataProvider {
      */
     PxPhoto getPhoto( long photoId);
 
-//    void getDynamicCarouselFeed( ApiInfo service );
+    void getDynamicCarouselFeed( Token token );
 
 }
